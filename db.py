@@ -15,7 +15,7 @@ from urllib.request import Request, urlopen
 
 import streamlit as st
 from sqlalchemy import Engine, UniqueConstraint, case, func, inspect, text
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 logger = logging.getLogger(__name__)
@@ -584,26 +584,32 @@ def import_topics_from_json(engine: Engine, json_path: str = "conteudo.json") ->
                     codigo = topico.get("codigo", "")
                     titulo = topico.get("titulo", "")
 
-                    statement = select(Topic).where(
-                        Topic.codigo == codigo,
-                        Topic.secao == secao_titulo,
-                        Topic.subsecao == subsecao_titulo,
-                    )
-                    existing = session.exec(statement).first()
+                    try:
+                        # Savepoint per row to tolerate concurrent inserts on first deploy.
+                        with session.begin_nested():
+                            statement = select(Topic).where(
+                                Topic.codigo == codigo,
+                                Topic.secao == secao_titulo,
+                                Topic.subsecao == subsecao_titulo,
+                            )
+                            existing = session.exec(statement).first()
 
-                    if not existing:
-                        new_topic = Topic(
-                            codigo=codigo,
-                            secao=secao_titulo,
-                            subsecao=subsecao_titulo,
-                            titulo=titulo,
-                        )
-                        session.add(new_topic)
-                        imported_count += 1
-                    elif existing.titulo != titulo:
-                        existing.titulo = titulo
-                        session.add(existing)
-                        updated_count += 1
+                            if not existing:
+                                new_topic = Topic(
+                                    codigo=codigo,
+                                    secao=secao_titulo,
+                                    subsecao=subsecao_titulo,
+                                    titulo=titulo,
+                                )
+                                session.add(new_topic)
+                                imported_count += 1
+                            elif existing.titulo != titulo:
+                                existing.titulo = titulo
+                                session.add(existing)
+                                updated_count += 1
+                    except IntegrityError:
+                        # Another worker/session inserted the same natural key first.
+                        continue
 
         session.commit()
 
