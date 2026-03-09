@@ -14,7 +14,8 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from urllib.request import Request, urlopen
 
 import streamlit as st
-from sqlalchemy import Engine, UniqueConstraint, case, func, text
+from sqlalchemy import Engine, UniqueConstraint, case, func, inspect
+from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ _DB_URL_ENV_KEYS = (
     "POSTGRES_PRISMA_URL",
 )
 _UNSUPPORTED_DB_QUERY_PARAMS = {"pgbouncer", "supa"}
-_POSTGRES_SCHEMA_LOCK_ID = 2026030901
+_REQUIRED_TABLES = {"topics", "progress", "review_log"}
 
 # --- Models ---
 
@@ -166,22 +167,24 @@ def init_db(db_path: str | None = None) -> Engine:
 
     if is_sqlite:
         SQLModel.metadata.create_all(engine)
-    elif db_url.startswith("postgresql+psycopg://"):
-        # Serialize DDL to avoid race conditions in multi-session deployments.
-        with engine.begin() as conn:
-            conn.execute(
-                text("SELECT pg_advisory_lock(:lock_id)"),
-                {"lock_id": _POSTGRES_SCHEMA_LOCK_ID},
-            )
-            try:
-                SQLModel.metadata.create_all(conn)
-            finally:
-                conn.execute(
-                    text("SELECT pg_advisory_unlock(:lock_id)"),
-                    {"lock_id": _POSTGRES_SCHEMA_LOCK_ID},
-                )
-    else:
+        return engine
+
+    if db_url.startswith("postgresql+psycopg://"):
+        existing_tables = set(inspect(engine).get_table_names())
+        if _REQUIRED_TABLES.issubset(existing_tables):
+            return engine
+
+    try:
         SQLModel.metadata.create_all(engine)
+    except SQLAlchemyError as exc:
+        message = str(exc).lower()
+        if "already exists" in message and "ix_topics_" in message:
+            logger.warning(
+                "Schema já existente detectado durante bootstrap; seguindo startup."
+            )
+        else:
+            raise
+
     return engine
 
 
