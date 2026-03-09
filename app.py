@@ -21,33 +21,56 @@ st.set_page_config(
 
 def display_header():
     """Display enhanced header with progress bar."""
-    if TCU_LOGO_PATH.exists():
-        logo_left, logo_center, logo_right = st.columns([1, 10, 1])
-        with logo_center:
-            st.image(str(TCU_LOGO_PATH), width="stretch")
-
-    st.title("📘 GayATCU - Dashboard de Estudos TCU")
     st.markdown(
         """
         <style>
-        .main-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 2rem;
-            border-radius: 10px;
-            margin-bottom: 2rem;
-            text-align: center;
+        .hero-panel {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.85) 100%);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 14px;
+            padding: 1.1rem 1.25rem 1.2rem 1.25rem;
+            margin: 0.25rem 0 1.25rem 0;
         }
-        .header-text {
-            color: white;
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
+        .hero-title {
+            font-size: clamp(1.8rem, 3.6vw, 2.7rem);
+            line-height: 1.15;
+            letter-spacing: -0.015em;
+            font-weight: 700;
+            color: #e5e7eb;
+            margin: 0.2rem 0 0.25rem 0;
         }
-        .header-subtitle {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.1rem;
+        .hero-subtitle {
+            color: #cbd5e1;
+            font-size: clamp(0.95rem, 1.7vw, 1.1rem);
+            margin: 0;
+        }
+        .logo-block {
+            margin: 0.2rem 0 0.9rem 0;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
         }
         </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if TCU_LOGO_PATH.exists():
+        logo_left, logo_center, logo_right = st.columns([1, 8, 1])
+        with logo_center:
+            st.markdown('<div class="logo-block">', unsafe_allow_html=True)
+            st.image(str(TCU_LOGO_PATH), width="stretch")
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown(
+        """
+        <div class="hero-panel">
+            <h1 class="hero-title">GayATCU · Dashboard de Estudos</h1>
+            <p class="hero-subtitle">Planejamento, progresso e revisão para preparação de Auditor do TCU.</p>
+        </div>
         """,
         unsafe_allow_html=True,
     )

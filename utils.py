@@ -1,7 +1,7 @@
 import datetime
 import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import streamlit as st
 from sqlalchemy import Engine, case, func
@@ -33,7 +33,7 @@ def load_content(json_path: str = "conteudo.json") -> list:
         ValueError: If the JSON structure is invalid.
     """
     try:
-        with open(json_path, "r", encoding="utf-8") as f:
+        with open(json_path, encoding="utf-8") as f:
             content = json.load(f)
     except json.JSONDecodeError as e:
         logger.error("Arquivo JSON inválido em '%s': %s", json_path, e)
@@ -72,7 +72,7 @@ def calculate_next_review(current_level: int, success: bool) -> int:
         return INTERVALS[0]
 
 
-def format_date(date_str: Optional[str]) -> str:
+def format_date(date_str: str | None) -> str:
     """
     Format a date string to Portuguese locale (DD/MM/YYYY).
     """
@@ -110,7 +110,7 @@ def get_completion_percentage(engine: Engine) -> float:
         return (completed / total) * 100.0
 
 
-def get_section_progress(engine: Engine) -> List[Dict[str, Any]]:
+def get_section_progress(engine: Engine) -> list[dict[str, Any]]:
     """
     Calculate progress statistics grouped by section.
     """

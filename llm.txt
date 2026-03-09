@@ -21,6 +21,9 @@ Este repositório contém o aplicativo GayATCU, um dashboard desenvolvido em Str
 - `session.py`: Gerenciamento do ciclo de vida e estado (singleton) do engine SQLAlchemy no Streamlit, garantindo concorrência segura na sessão do usuário.
 - `utils.py`: Funções utilitárias e regras (cálculo de datas das revisões baseada em deltas, load_content, formatações).
 - `components/charts.py`: Componentes reutilizáveis de gráficos Plotly (donut, bar, line, pie).
+- `tests/conftest.py`: Fixtures compartilhadas (engine SQLite in-memory com StaticPool).
+- `tests/test_db.py`: Testes unitários da camada de dados (import, marcação, revisões, estatísticas, exportação).
+- `tests/test_utils.py`: Testes unitários de funções utilitárias (SRS, formatação, validação JSON).
 
 ## Schema do Banco de Dados
 
@@ -64,13 +67,14 @@ Este repositório contém o aplicativo GayATCU, um dashboard desenvolvido em Str
    - Revisão Nível 3+: + 30 dias (intervalo fixo de consolidação)
 3. **Penalidades**:
    - **Revisão incorreta**: O ciclo retorna ao Nível 0 (próxima revisão em 24h), sem exceções.
-   - **Revisão perdida** (timeout — tópico passou da data agendada sem ser revisado): Tratada da mesma forma que revisão incorreta — retorna ao Nível 0.
+   - **Revisão perdida** (timeout — tópico passou da data agendada sem ser revisado): Tratada da mesma forma que revisão incorreta — retorna ao Nível 0. A detecção ocorre ao carregar a página de revisões (`pages/2_📅_Revisoes.py`), que compara `next_review_date` com a data atual.
    - Não existe fluxo de "acerto parcial" na implementação atual.
 
 ## Diretrizes de Desenvolvimento (LLM Context)
 
 - **Idioma de Comunicação e Código**: O idioma padrão para comentários, documentações e comunicação nos testes/features DEVE ser o **Português Brasileiro (PT-BR)**.
-- **Comandos de Terminal**: Utilize o gerenciador **`uv`** preferencialmente (`uv run streamlit run app.py`).
+- **Comandos de Terminal**: Utilize o gerenciador **`uv`** obrigatoriamente (`uv run streamlit run app.py`).
+- **Testes**: `uv run pytest tests/ -v` (40 testes cobrindo db.py e utils.py).
 - **Padrões de Qualidade**:
   - Toda interação com banco DEVE usar as funções ORM centralizadas no `db.py` — **nunca** SQL raw nas pages.
   - Componentes do Streamlit que precisam do banco interagem via `get_db()` de `session.py` (retorna um `engine` SQLAlchemy).

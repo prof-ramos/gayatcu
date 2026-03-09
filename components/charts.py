@@ -5,7 +5,7 @@ This module contains standardized Plotly chart functions that are used
 across multiple pages to eliminate code duplication and ensure consistency.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import pandas as pd
 import plotly.express as px
@@ -86,7 +86,7 @@ def create_donut_chart(
 
 
 def create_progress_bar_chart(
-    section_progress: List[Dict[str, Any]],
+    section_progress: list[dict[str, Any]],
     title: str = "",
     height: int = 300,
     color_scale: str = "Viridis",
@@ -150,7 +150,7 @@ def create_line_chart(
     y_axis_title: str = "",
     height: int = 300,
     markers: bool = True,
-    hover_template: Optional[str] = None,
+    hover_template: str | None = None,
 ) -> go.Figure:
     """
     Create a standardized line chart for trends over time.
@@ -214,7 +214,7 @@ def create_pie_chart(
     title: str = "",
     hole_size: float = 0.0,
     height: int = 300,
-    hover_template: Optional[str] = None,
+    hover_template: str | None = None,
 ) -> go.Figure:
     """
     Create a standardized pie chart for categorical distribution.
@@ -263,7 +263,7 @@ def create_pie_chart(
 
 
 def create_metric_row(
-    metrics: List[Dict[str, Any]],
+    metrics: list[dict[str, Any]],
     use_container_width: bool = True,
 ) -> None:
     """
@@ -281,6 +281,6 @@ def create_metric_row(
         ])
     """
     cols = st.columns(len(metrics))
-    for col, metric in zip(cols, metrics):
+    for col, metric in zip(cols, metrics, strict=True):
         with col:
             st.metric(metric["label"], metric["value"])
