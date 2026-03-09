@@ -1,11 +1,15 @@
-import pandas as pd
-import streamlit as st
 from datetime import datetime, timedelta
+import logging
 
+import streamlit as st
+from sqlalchemy.exc import SQLAlchemyError
+
+from components import create_donut_chart, create_progress_bar_chart
 from db import get_statistics
 from session import get_db, initialize_database
 from utils import get_completion_percentage, get_section_progress
-from components import create_donut_chart, create_progress_bar_chart
+
+logger = logging.getLogger(__name__)
 
 st.set_page_config(
     page_title="GayATCU - Dashboard de Estudos TCU", page_icon="📘", layout="wide"
@@ -37,11 +41,13 @@ def display_header():
         }
         </style>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
 
-def display_progress_overview(completion_pct: float, total_topics: int, completed_topics: int):
+def display_progress_overview(
+    completion_pct: float, total_topics: int, completed_topics: int
+):
     """Display enhanced progress overview with visual indicators."""
     pending_topics = total_topics - completed_topics
 
@@ -51,7 +57,7 @@ def display_progress_overview(completion_pct: float, total_topics: int, complete
         st.metric(
             label="📚 Total de Tópicos",
             value=f"{total_topics}",
-            help="Número total de tópicos no programa de estudos"
+            help="Número total de tópicos no programa de estudos",
         )
 
     with col2:
@@ -61,14 +67,14 @@ def display_progress_overview(completion_pct: float, total_topics: int, complete
             value=f"{completed_topics}",
             delta=f"{completion_pct:.1f}% do total",
             delta_color=delta_color,
-            help="Tópicos marcados como concluídos"
+            help="Tópicos marcados como concluídos",
         )
 
     with col3:
         st.metric(
             label="📝 Pendentes",
             value=f"{pending_topics}",
-            help="Tópicos que ainda precisam ser estudados"
+            help="Tópicos que ainda precisam ser estudados",
         )
 
     with col4:
@@ -78,7 +84,7 @@ def display_progress_overview(completion_pct: float, total_topics: int, complete
         st.metric(
             label="📅 Previsão de Conclusão",
             value=completion_date.strftime("%d/%m/%Y"),
-            help=f"Estimativa baseada em 5 tópicos por semana ({weeks_remaining} semanas restantes)"
+            help=f"Estimativa baseada em 5 tópicos por semana ({weeks_remaining} semanas restantes)",
         )
 
 
@@ -91,7 +97,9 @@ def display_section_cards(section_progress: list):
         return
 
     # Sort by percentage descending
-    section_progress_sorted = sorted(section_progress, key=lambda x: x['percentage'], reverse=True)
+    section_progress_sorted = sorted(
+        section_progress, key=lambda x: x["percentage"], reverse=True
+    )
 
     # Display in grid layout (3 columns)
     cols_per_row = 3
@@ -103,7 +111,7 @@ def display_section_cards(section_progress: list):
                 section = section_progress_sorted[idx]
                 with col:
                     # Progress percentage determines color
-                    pct = section['percentage']
+                    pct = section["percentage"]
                     if pct >= 80:
                         emoji = "🟢"
                         border_color = "#00CC96"
@@ -127,17 +135,17 @@ def display_section_cards(section_progress: list):
                             background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.1) 100%);
                         ">
                             <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem;">
-                                {emoji} {section['section']}
+                                {emoji} {section["section"]}
                             </div>
                             <div style="font-size: 2rem; font-weight: bold; color: {border_color};">
-                                {section['percentage']:.1f}%
+                                {section["percentage"]:.1f}%
                             </div>
                             <div style="font-size: 0.9rem; color: #888;">
-                                {section['completed']} de {section['total']} tópicos
+                                {section["completed"]} de {section["total"]} tópicos
                             </div>
                         </div>
                         """,
-                        unsafe_allow_html=True
+                        unsafe_allow_html=True,
                     )
 
 
@@ -157,7 +165,9 @@ def display_motivational_message(completion_pct: float):
         submessage = "Toda jornada começa com um primeiro passo. Continue estudando!"
     else:
         message = "📚 Pronto para começar?"
-        submessage = "Marque seu primeiro tópico como concluído para iniciar seu progresso!"
+        submessage = (
+            "Marque seu primeiro tópico como concluído para iniciar seu progresso!"
+        )
 
     st.markdown(
         f"""
@@ -176,112 +186,119 @@ def display_motivational_message(completion_pct: float):
             </div>
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
 
 def main():
-    # Initialize database and import data if needed
-    initialize_database()
-
-    # Get database connection
-    db = get_db()
-
-    # Calculate metrics using database
+    # Global exception handler for Streamlit Community Cloud
     try:
-        stats = get_statistics(db)
-        total_topics = stats.get("total_topics", 0)
-        completed_topics = stats.get("completed_topics", 0)
-        total_reviews = stats.get("total_reviews", 0)
-    except Exception:
-        total_topics = 0
-        completed_topics = 0
-        total_reviews = 0
+        # Initialize database and import data if needed
+        initialize_database()
 
-    try:
-        completion_pct = get_completion_percentage(db)
-    except Exception:
-        completion_pct = 0.0
+        # Get database connection
+        db = get_db()
 
-    try:
-        section_progress = get_section_progress(db)
-    except Exception:
-        section_progress = []
+        # Calculate metrics using database
+        try:
+            stats = get_statistics(db)
+            total_topics = stats.get("total_topics", 0)
+            completed_topics = stats.get("completed_topics", 0)
+            total_reviews = stats.get("total_reviews", 0)
+        except (SQLAlchemyError, ValueError):
+            total_topics = 0
+            completed_topics = 0
+            total_reviews = 0
 
-    # Display header
-    display_header()
+        try:
+            completion_pct = get_completion_percentage(db)
+        except (SQLAlchemyError, ValueError):
+            completion_pct = 0.0
 
-    # Display motivational message
-    display_motivational_message(completion_pct)
+        try:
+            section_progress = get_section_progress(db)
+        except (SQLAlchemyError, ValueError):
+            section_progress = []
 
-    # Display progress overview
-    display_progress_overview(completion_pct, total_topics, completed_topics)
+        # Display header
+        display_header()
 
-    st.markdown("---")
+        # Display motivational message
+        display_motivational_message(completion_pct)
 
-    # Display charts in improved layout
-    col1, col2 = st.columns(2)
+        # Display progress overview
+        display_progress_overview(completion_pct, total_topics, completed_topics)
 
-    with col1:
-        st.subheader("📊 Progresso Geral")
+        st.markdown("---")
 
-        fig_donut = create_donut_chart(
-            completed=completed_topics,
-            total=total_topics,
-            hole_size=0.6,
-            show_percentage=True
-        )
+        # Display charts in improved layout
+        col1, col2 = st.columns(2)
 
-        st.plotly_chart(fig_donut, use_container_width=True)
+        with col1:
+            st.subheader("📊 Progresso Geral")
 
-    with col2:
-        st.subheader("📈 Progresso por Disciplina")
-
-        if section_progress:
-            fig_bar = create_progress_bar_chart(
-                section_progress=section_progress,
-                height=400,
-                color_scale="RdYlGn"  # Red-Yellow-Green scale
+            fig_donut = create_donut_chart(
+                completed=completed_topics,
+                total=total_topics,
+                hole_size=0.6,
+                show_percentage=True,
             )
 
-            st.plotly_chart(fig_bar, use_container_width=True)
-        else:
-            st.info("Nenhum dado de progresso disponível.")
+            st.plotly_chart(fig_donut, use_container_width=True)
 
-    st.markdown("---")
+        with col2:
+            st.subheader("📈 Progresso por Disciplina")
 
-    # Display section cards
-    display_section_cards(section_progress)
+            if section_progress:
+                fig_bar = create_progress_bar_chart(
+                    section_progress=section_progress,
+                    height=400,
+                    color_scale="RdYlGn",  # Red-Yellow-Green scale
+                )
 
-    # Footer with quick actions
-    st.markdown("---")
-    st.markdown("### ⚡ Ações Rápidas")
+                st.plotly_chart(fig_bar, use_container_width=True)
+            else:
+                st.info("Nenhum dado de progresso disponível.")
 
-    col1, col2, col3 = st.columns(3)
+        st.markdown("---")
 
-    with col1:
-        if st.button("📋 Ver Checklist", use_container_width=True, type="primary"):
-            st.switch_page("pages/1_📋_Checklist.py")
+        # Display section cards
+        display_section_cards(section_progress)
 
-    with col2:
-        if st.button("📅 Ver Revisões", use_container_width=True):
-            st.switch_page("pages/2_📅_Revisoes.py")
+        # Footer with quick actions
+        st.markdown("---")
+        st.markdown("### ⚡ Ações Rápidas")
 
-    with col3:
-        if st.button("📊 Ver Estatísticas", use_container_width=True):
-            st.switch_page("pages/3_📊_Estatisticas.py")
+        col1, col2, col3 = st.columns(3)
 
-    # Footer info
-    st.markdown("---")
-    st.markdown(
-        """
-        <div style="text-align: center; color: #888; font-size: 0.9rem; margin-top: 2rem;">
-            💡 <strong>Dica:</strong> Revise os tópicos regularmente usando o sistema de repetição espaçada
-            para fixar o conteúdo na memória de longo prazo.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+        with col1:
+            if st.button("📋 Ver Checklist", use_container_width=True, type="primary"):
+                st.switch_page("pages/1_📋_Checklist.py")
+
+        with col2:
+            if st.button("📅 Ver Revisões", use_container_width=True):
+                st.switch_page("pages/2_📅_Revisoes.py")
+
+        with col3:
+            if st.button("📊 Ver Estatísticas", use_container_width=True):
+                st.switch_page("pages/3_📊_Estatisticas.py")
+
+        # Footer info
+        st.markdown("---")
+        st.markdown(
+            """
+            <div style="text-align: center; color: #888; font-size: 0.9rem; margin-top: 2rem;">
+                💡 <strong>Dica:</strong> Revise os tópicos regularmente usando o sistema de repetição espaçada
+                para fixar o conteúdo na memória de longo prazo.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    except Exception as e:
+        st.error(f"Erro ao carregar aplicação: {str(e)}")
+        st.info("Por favor, recarregue a página. Se o problema persistir, contacte o suporte.")
+        logger.error(f"Application error: {str(e)}", exc_info=True)
 
 
 if __name__ == "__main__":

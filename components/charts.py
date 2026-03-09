@@ -5,11 +5,12 @@ This module contains standardized Plotly chart functions that are used
 across multiple pages to eliminate code duplication and ensure consistency.
 """
 
+from typing import Any, Dict, List, Optional
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from typing import List, Dict, Any, Optional
-
+import streamlit as st
 
 # Chart color scheme (consistent with Streamlit theme)
 CHART_COLORS = {
@@ -53,7 +54,9 @@ def create_donut_chart(
                 labels=["Concluídos", "Pendentes"],
                 values=[completed, pending],
                 hole=hole_size,
-                marker=dict(colors=[CHART_COLORS["completed"], CHART_COLORS["pending"]]),
+                marker=dict(
+                    colors=[CHART_COLORS["completed"], CHART_COLORS["pending"]]
+                ),
             )
         ]
     )
@@ -281,7 +284,3 @@ def create_metric_row(
     for col, metric in zip(cols, metrics):
         with col:
             st.metric(metric["label"], metric["value"])
-
-
-# Import Streamlit at the end to avoid import issues
-import streamlit as st

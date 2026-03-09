@@ -110,6 +110,50 @@ copy data\study_tracker.db data\study_tracker_backup_manual.db
 
 Ou use a exportação na página de Estatísticas.
 
+## 🚀 Deploy na Nuvem
+
+Quer acessar seu dashboard de qualquer lugar? Faça o deploy no Streamlit Community Cloud!
+
+### Deploy Rápido
+
+1. **Prepare o repositório**
+   ```bash
+   git add .
+   git commit -m "feat: preparar para deploy"
+   git push origin main
+   ```
+
+2. **Acesse Streamlit Cloud**
+   - Vá para [https://share.streamlit.io](https://share.streamlit.io)
+   - Clique em "New app"
+   - Selecione seu repositório `gayatcu`
+   - Deploy automatico! 🎉
+
+### Documentação Completa
+
+📖 **[Guia Detalhado de Deploy](DEPLOYMENT.md)**
+
+O guia completo inclui:
+- ✅ Passo a passo detalhado
+- 🔧 Configuração do GitHub
+- 📊 Monitoramento e logs
+- 🛠️ Troubleshooting de erros
+- 💡 Boas práticas e otimização
+
+### Vantagens do Deploy
+
+- 🌐 Acesso de qualquer dispositivo
+- 📱 Interface mobile-friendly
+- 🔄 Atualizações automáticas
+- 📈 Métricas de uso
+- 💾 Dados persistentes (com configuração adequada)
+
+### Links Úteis
+
+- [Streamlit Community Cloud](https://streamlit.io/cloud)
+- [Documentação Oficial](https://docs.streamlit.io)
+- [Exemplos de Apps](https://streamlit.io/gallery)
+
 ---
 
 **Bons estudos! 🎓**

@@ -8,3 +8,12 @@ font = "sans serif"
 
 [server]
 runOnSave = true
+maxUploadSize = 200
+maxMessageSize = 200
+
+[logger]
+level = "info"
+
+[runner]
+fastReruns = false
+magicEnabled = false

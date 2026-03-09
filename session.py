@@ -6,10 +6,12 @@ following Streamlit best practices.
 """
 
 import logging
-from typing import Any
+import psutil
+import os
 
 import streamlit as st
-from sqlalchemy import func
+from sqlalchemy import Engine, func
+from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session, select
 
 from db import Topic, import_topics_from_json, init_db
@@ -19,7 +21,39 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def get_db_connection() -> Any:
+def get_memory_usage_mb() -> float:
+    """
+    Get current memory usage in MB.
+
+    Returns:
+        float: Memory usage in megabytes
+    """
+    try:
+        process = psutil.Process(os.getpid())
+        return process.memory_info().rss / 1024 / 1024  # Convert bytes to MB
+    except (psutil.Error, AttributeError):
+        # Fallback if psutil not available or fails
+        return 0.0
+
+
+def log_memory_usage(label: str = "Memory"):
+    """
+    Log current memory usage for monitoring.
+
+    Args:
+        label: Label to identify the measurement point
+    """
+    memory_mb = get_memory_usage_mb()
+    logger.info(f"{label}: {memory_mb:.2f} MB used")
+
+    # Optional: Display in Streamlit if memory is high
+    if memory_mb > 2000:  # Warning threshold: 2GB
+        st.warning(f"⚠️ Alto uso de memória: {memory_mb:.2f} MB")
+
+    return memory_mb
+
+
+def get_db_connection() -> Engine:
     """
     Get a database connection with thread safety enabled.
 
@@ -34,13 +68,13 @@ def get_db_connection() -> Any:
         engine = init_db("data/study_tracker.db")
         logger.info("Database connection established")
         return engine
-    except Exception as e:
-        logger.error(f"Database connection error: {e}")
+    except (SQLAlchemyError, OSError) as e:
+        logger.error("Database connection error: %s", e)
         st.error(f"Erro ao conectar ao banco de dados: {e}")
         raise
 
 
-def get_db() -> Any:
+def get_db() -> Engine:
     """
     Get database engine from session state or create new one.
 
@@ -57,8 +91,8 @@ def get_db() -> Any:
             st.session_state.db_connection = get_db_connection()
 
         return st.session_state.db_connection
-    except Exception as e:
-        logger.error(f"Error getting database connection: {e}")
+    except (SQLAlchemyError, OSError) as e:
+        logger.error("Error getting database connection: %s", e)
         st.error(f"Erro ao obter conexão com banco: {e}")
         # Fallback: create new connection
         return get_db_connection()
@@ -93,8 +127,8 @@ def initialize_database() -> bool:
             logger.info(f"Database already contains {topic_count} topics")
             return True
 
-    except Exception as e:
-        logger.error(f"Database initialization error: {e}")
+    except (SQLAlchemyError, OSError, ValueError) as e:
+        logger.error("Database initialization error: %s", e)
         st.error(f"Erro ao inicializar banco de dados: {e}")
         return False
 
@@ -114,9 +148,9 @@ def safe_db_operation(operation_func, default_value=None):
     def wrapper(*args, **kwargs):
         try:
             return operation_func(*args, **kwargs)
-        except Exception as e:
-            logger.error(f"Unexpected error: {e}")
-            st.warning(f"Erro inesperado: {e}")
+        except (SQLAlchemyError, ValueError) as e:
+            logger.error("Database operation error: %s", e)
+            st.warning(f"Erro na operação: {e}")
             return default_value
 
     return wrapper

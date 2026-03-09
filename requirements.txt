@@ -1,0 +1,68 @@
+# Python 3.10-3.12 required for Streamlit Cloud
+
+# Core dependencies
+streamlit==1.55.0
+plotly==6.6.0
+sqlmodel==0.0.37
+pandas==2.3.3
+
+# Streamlit dependencies
+altair!=5.4.0,!=5.4.1,<7,>=4.0
+blinker<2,>=1.5.0
+cachetools<8,>=5.5
+click<9,>=7.0
+gitpython!=3.1.19,<4,>=3.0.7
+numpy<3,>=1.23
+packaging>=20
+pillow<13,>=7.1.0
+pydeck<1,>=0.8.0b4
+protobuf<7,>=3.20
+pyarrow>=7.0
+requests<3,>=2.27
+tenacity<10,>=8.1.0
+toml<2,>=0.10.1
+tornado!=6.5.0,<7,>=6.0.3
+typing-extensions<5,>=4.10.0
+
+# Pandas dependencies
+python-dateutil>=2.8.2
+pytz>=2020.1
+tzdata>=2022.7
+
+# Plotly dependencies
+narwhals>=1.15.1
+
+# SQLModel dependencies
+SQLAlchemy<2.1.0,>=2.0.14
+pydantic>=2.11.0
+
+# Altair dependencies
+jinja2
+jsonschema>=3.0
+
+# GitPython dependencies
+gitdb<5,>=4.0.1
+smmap<6,>=3.0.1
+
+# Requests dependencies
+charset-normalizer<4,>=2
+idna<4,>=2.5
+urllib3<3,>=1.21.1
+certifi>=2017.4.17
+
+# Jinja2 dependencies
+MarkupSafe>=2.0
+
+# JSONSchema dependencies
+attrs>=22.2.0
+jsonschema-specifications>=2023.03.6
+referencing>=0.28.4
+rpds-py>=0.25.0
+
+# Pydantic dependencies
+annotated-types>=0.6.0
+pydantic-core==2.41.5
+typing-inspection>=0.4.2
+
+# python-dateutil dependencies
+six>=1.5

@@ -1,24 +1,63 @@
 import datetime
 import json
+import logging
 from typing import Any, Dict, List, Optional
 
 import streamlit as st
-
-from sqlalchemy import func
+from sqlalchemy import Engine, case, func
 from sqlmodel import Session, select
 
 from db import Progress, Topic
+
+logger = logging.getLogger(__name__)
 
 INTERVALS = [1, 7, 15, 30]
 
 
 @st.cache_data(ttl=300)  # Cache por 5 minutos
-def load_content(json_path: str = "conteudo.json") -> Dict[str, Any]:
+def load_content(json_path: str = "conteudo.json") -> list:
     """
     Load and validate JSON content from file.
+
+    Validates that the JSON is a list of sections, each containing
+    'titulo' and 'subsecoes' keys with proper structure.
+
+    Args:
+        json_path: Path to the JSON file.
+
+    Returns:
+        List of section dictionaries.
+
+    Raises:
+        FileNotFoundError: If the JSON file does not exist.
+        ValueError: If the JSON structure is invalid.
     """
-    with open(json_path, "r", encoding="utf-8") as f:
-        content = json.load(f)
+    try:
+        with open(json_path, "r", encoding="utf-8") as f:
+            content = json.load(f)
+    except json.JSONDecodeError as e:
+        logger.error("Arquivo JSON inválido em '%s': %s", json_path, e)
+        raise ValueError(f"Arquivo JSON inválido: {e}") from e
+
+    if not isinstance(content, list):
+        raise ValueError(
+            f"Esperado lista de seções no JSON, obtido {type(content).__name__}"
+        )
+
+    if len(content) == 0:
+        logger.warning("Arquivo JSON '%s' está vazio", json_path)
+
+    for idx, section in enumerate(content):
+        if not isinstance(section, dict):
+            raise ValueError(f"Seção {idx} não é um dicionário")
+        if "titulo" not in section:
+            raise ValueError(f"Seção {idx} não possui campo 'titulo'")
+        if "subsecoes" not in section:
+            logger.warning(
+                "Seção '%s' não possui campo 'subsecoes'",
+                section.get("titulo", f"idx={idx}"),
+            )
+
     return content
 
 
@@ -50,7 +89,7 @@ def format_date(date_str: Optional[str]) -> str:
         return ""
 
 
-def get_completion_percentage(engine: Any) -> float:
+def get_completion_percentage(engine: Engine) -> float:
     """
     Calculate the overall completion percentage of all topics.
     """
@@ -71,7 +110,7 @@ def get_completion_percentage(engine: Any) -> float:
         return (completed / total) * 100.0
 
 
-def get_section_progress(engine: Any) -> List[Dict[str, Any]]:
+def get_section_progress(engine: Engine) -> List[Dict[str, Any]]:
     """
     Calculate progress statistics grouped by section.
     """
@@ -80,9 +119,9 @@ def get_section_progress(engine: Any) -> List[Dict[str, Any]]:
             select(
                 Topic.secao,
                 func.count(Topic.id).label("total"),
-                func.sum(
-                    func.case((Progress.completed_at.is_not(None), 1), else_=0)
-                ).label("completed"),
+                func.sum(case((Progress.completed_at.is_not(None), 1), else_=0)).label(
+                    "completed"
+                ),
             )
             .join(Progress, isouter=True)
             .group_by(Topic.secao)
