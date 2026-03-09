@@ -5,18 +5,20 @@ This page implements a complete review system using the SRS (Spaced Repetition S
 algorithm to optimize learning retention through scheduled reviews.
 """
 
+from datetime import datetime
+
 import streamlit as st
-from datetime import datetime, timedelta
-from session import get_db
-from db import get_topics_due_for_review, mark_review_complete, get_all_progress
-from utils import calculate_next_review, format_date, INTERVALS
 
-
-st.set_page_config(
-    page_title="Revisões - GayATCU",
-    page_icon="📅",
-    layout="wide"
+from db import (
+    get_all_progress,
+    get_topics_due_for_review,
+    get_upcoming_reviews,
+    mark_review_complete,
 )
+from session import get_db
+from utils import INTERVALS, calculate_next_review, format_date
+
+st.set_page_config(page_title="Revisões - GayATCU", page_icon="📅", layout="wide")
 
 
 def get_interval_label(days: int) -> str:
@@ -45,17 +47,13 @@ def group_by_interval(topics: list) -> dict:
         Dictionary with interval labels as keys and topic lists as values
     """
     today = datetime.now().date()
-    grouped = {
-        "24h": [],
-        "7d": [],
-        "15d": [],
-        "30d": [],
-        "overdue": []
-    }
+    grouped = {"24h": [], "7d": [], "15d": [], "30d": [], "overdue": []}
 
     for topic in topics:
-        if topic['next_review_date']:
-            review_date = datetime.strptime(topic['next_review_date'], "%Y-%m-%d").date()
+        if topic["next_review_date"]:
+            review_date = datetime.strptime(
+                topic["next_review_date"], "%Y-%m-%d"
+            ).date()
             days_until = (review_date - today).days
 
             if days_until <= 1:
@@ -74,55 +72,14 @@ def group_by_interval(topics: list) -> dict:
     return grouped
 
 
-def get_upcoming_reviews(conn, days: int = 30) -> list:
-    """
-    Get topics scheduled for review in the next N days.
-
-    Args:
-        conn: Database connection
-        days: Number of days to look ahead (default: 30)
-
-    Returns:
-        List of topics with review dates
-    """
-    cursor = conn.cursor()
-    end_date = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
-
-    cursor.execute("""
-        SELECT
-            t.id, t.codigo, t.secao, t.subsecao, t.titulo,
-            p.next_review_date, p.review_count
-        FROM topics t
-        INNER JOIN progress p ON t.id = p.topic_id
-        WHERE p.completed_at IS NOT NULL
-          AND p.next_review_date IS NOT NULL
-          AND p.next_review_date > ?
-          AND p.next_review_date <= ?
-        ORDER BY p.next_review_date
-    """, (datetime.now().strftime("%Y-%m-%d"), end_date))
-
-    results = []
-    for row in cursor.fetchall():
-        results.append({
-            "id": row["id"],
-            "codigo": row["codigo"],
-            "secao": row["secao"],
-            "subsecao": row["subsecao"],
-            "titulo": row["titulo"],
-            "next_review_date": row["next_review_date"],
-            "review_count": row["review_count"] or 0
-        })
-
-    return results
-
-
-def display_topic_card(topic: dict, key: str):
+def display_topic_card(topic: dict, key: str, engine):
     """
     Display a topic review card with action buttons.
 
     Args:
         topic: Topic dictionary with all relevant information
         key: Unique key for the widget
+        engine: Database engine
     """
     with st.container():
         col1, col2 = st.columns([4, 1])
@@ -130,17 +87,17 @@ def display_topic_card(topic: dict, key: str):
         with col1:
             st.markdown(f"**{topic['codigo']} - {topic['titulo']}**")
             st.caption(f"{topic['secao']} > {topic['subsecao']}")
-            if topic['last_reviewed_at']:
+            if topic["last_reviewed_at"]:
                 st.caption(f"Última revisão: {format_date(topic['last_reviewed_at'])}")
             else:
                 st.caption("Primeira revisão")
 
         with col2:
-            current_level = min(topic['review_count'], len(INTERVALS) - 1)
+            current_level = min(topic["review_count"], len(INTERVALS) - 1)
             next_interval = calculate_next_review(current_level, True)
 
             if st.button("✓ Concluir", key=f"complete_{key}", use_container_width=True):
-                if mark_review_complete(st.session_state.db_conn, topic['id'], next_interval):
+                if mark_review_complete(engine, topic["id"], next_interval):
                     st.success("Revisão registrada!")
                     st.rerun()
                 else:
@@ -165,7 +122,7 @@ def display_calendar_view(upcoming: list):
     # Group by date
     by_date = {}
     for topic in upcoming:
-        date_str = topic['next_review_date']
+        date_str = topic["next_review_date"]
         if date_str not in by_date:
             by_date[date_str] = []
         by_date[date_str].append(topic)
@@ -173,7 +130,9 @@ def display_calendar_view(upcoming: list):
     # Display each date
     for date_str, topics in sorted(by_date.items()):
         formatted_date = format_date(date_str)
-        days_until = (datetime.strptime(date_str, "%Y-%m-%d").date() - datetime.now().date()).days
+        days_until = (
+            datetime.strptime(date_str, "%Y-%m-%d").date() - datetime.now().date()
+        ).days
 
         if days_until == 0:
             date_label = f"📌 **Hoje** ({formatted_date})"
@@ -185,12 +144,15 @@ def display_calendar_view(upcoming: list):
         with st.expander(date_label):
             for topic in topics:
                 st.markdown(f"- **{topic['codigo']}**: {topic['titulo']}")
-                st.caption(f"   {topic['secao']} > {topic['subsecao']} • Revisões: {topic['review_count']}")
+                st.caption(
+                    f"   {topic['secao']} > {topic['subsecao']}"
+                    f" • Revisões: {topic['review_count']}"
+                )
 
 
 def main():
-    # Initialize database connection
-    db = get_db()
+    # Initialize database engine
+    engine = get_db()
 
     # Page header
     st.title("📅 Sistema de Revisões")
@@ -200,19 +162,19 @@ def main():
     today = datetime.now().strftime("%Y-%m-%d")
 
     # Load topics due for review
-    due_topics = get_topics_due_for_review(db, today)
+    due_topics = get_topics_due_for_review(engine, today)
 
     # Display metrics
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Revisões Pendentes", f"{len(due_topics)}")
     with col2:
-        upcoming = get_upcoming_reviews(db, 7)
+        upcoming = get_upcoming_reviews(engine, 7)
         st.metric("Próximos 7 dias", f"{len(upcoming)}")
     with col3:
-        all_progress = get_all_progress(db)
-        completed = [p for p in all_progress if p['completed_at']]
-        total_reviews = sum(p['review_count'] for p in completed)
+        all_progress = get_all_progress(engine)
+        completed = [p for p in all_progress if p["completed_at"]]
+        total_reviews = sum(p["review_count"] for p in completed)
         st.metric("Total de Revisões", f"{total_reviews}")
 
     st.markdown("---")
@@ -223,7 +185,10 @@ def main():
     with tab1:
         if not due_topics:
             st.success("🎉 Nenhuma revisão pendente para hoje!")
-            st.info("Tópicos concluídos aparecerão aqui quando estiverem agendados para revisão.")
+            st.info(
+                "Tópicos concluídos aparecerão aqui quando "
+                "estiverem agendados para revisão."
+            )
         else:
             # Group by interval
             grouped = group_by_interval(due_topics)
@@ -234,18 +199,21 @@ def main():
             for interval in interval_order:
                 if grouped[interval]:
                     if interval == "overdue":
-                        st.markdown(f"### ⚠️ Revisões Atrasadas")
+                        st.markdown("### ⚠️ Revisões Atrasadas")
                     else:
-                        st.markdown(f"### Intervalo: {get_interval_label(INTERVALS[interval_order.index(interval)])}")
+                        interval_label = get_interval_label(
+                            INTERVALS[interval_order.index(interval)]
+                        )
+                        st.markdown(f"### Intervalo: {interval_label}")
 
                     for idx, topic in enumerate(grouped[interval]):
-                        display_topic_card(topic, f"{interval}_{idx}")
+                        display_topic_card(topic, f"{interval}_{idx}", engine)
 
                     st.markdown("<br>", unsafe_allow_html=True)
 
     with tab2:
         # Show calendar view of upcoming reviews
-        all_upcoming = get_upcoming_reviews(db, 30)
+        all_upcoming = get_upcoming_reviews(engine, 30)
         display_calendar_view(all_upcoming)
 
         # Statistics about review distribution
@@ -256,7 +224,9 @@ def main():
             # Calculate distribution
             distribution = {}
             for topic in all_upcoming:
-                review_date = datetime.strptime(topic['next_review_date'], "%Y-%m-%d").date()
+                review_date = datetime.strptime(
+                    topic["next_review_date"], "%Y-%m-%d"
+                ).date()
                 week_num = review_date.isocalendar()[1]
                 week_label = f"Semana {week_num}"
 
@@ -269,7 +239,10 @@ def main():
             with col1:
                 st.metric("Média por dia", f"{len(all_upcoming) / 30:.1f}")
             with col2:
-                st.metric("Pico semanal", f"{max(distribution.values()) if distribution else 0}")
+                st.metric(
+                    "Pico semanal",
+                    f"{max(distribution.values()) if distribution else 0}",
+                )
         else:
             st.info("Sem revisões agendadas para os próximos 30 dias.")
 
@@ -298,7 +271,7 @@ def main():
                 "Primeira revisão",
                 "Consolidação",
                 "Reforço intermediário",
-                "Revisão de longo prazo"
+                "Revisão de longo prazo",
             ][idx]
             st.markdown(f"**{label}**: {level_desc}")
 
@@ -307,7 +280,7 @@ def main():
         st.markdown("### 💡 Dicas")
         st.markdown("""
         - Revise sempre que possível
-        Seja honesto sobre seu aprendizado
+        - Seja honesto sobre seu aprendizado
         - Tópicos difíceis reaparecerão com mais frequência
         - A constância é a chave do aprendizado eficaz
         """)

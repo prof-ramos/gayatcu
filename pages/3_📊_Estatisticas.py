@@ -1,24 +1,44 @@
-import streamlit as st
-import pandas as pd
+"""
+Statistics Page - Study metrics and visualizations.
+
+Displays comprehensive study statistics including completion rates,
+progress by section, review trends, and topic distribution.
+"""
+
 from datetime import datetime
+
+import pandas as pd
+import streamlit as st
+
+from components import (
+    create_donut_chart,
+    create_line_chart,
+    create_pie_chart,
+    create_progress_bar_chart,
+)
+from db import (
+    export_all_progress_to_dict,
+    get_detailed_statistics_by_section,
+    get_statistics,
+    get_topic_distribution_by_section,
+)
+from db import (
+    get_weekly_review_data as db_get_weekly_review_data,
+)
 from session import get_db
 from utils import get_section_progress
-from components import create_donut_chart, create_progress_bar_chart, create_line_chart, create_pie_chart
-from db import get_detailed_statistics_by_section, get_weekly_review_data, get_topic_distribution_by_section, export_all_progress_to_dict
 
 st.set_page_config(page_title="Estatísticas", page_icon="📊", layout="wide")
 
 
-def display_key_metrics(cursor):
-    """Display top row with key study metrics."""
-    # Overall completion rate
-    cursor.execute("SELECT COUNT(*) FROM topics")
-    total_topics = cursor.fetchone()[0]
+def display_key_metrics(engine):
+    """Display top row with key study metrics using ORM."""
+    stats = get_statistics(engine)
 
-    cursor.execute("SELECT COUNT(*) FROM progress WHERE completed_at IS NOT NULL")
-    completed_topics = cursor.fetchone()[0]
-
-    completion_rate = (completed_topics / total_topics * 100) if total_topics > 0 else 0
+    total_topics = stats["total_topics"]
+    completed_topics = stats["completed_topics"]
+    completion_rate = stats["completion_rate"]
+    total_reviews = stats["total_reviews"]
 
     # Top row: Key metrics
     col1, col2, col3, col4 = st.columns(4)
@@ -29,14 +49,12 @@ def display_key_metrics(cursor):
     with col3:
         st.metric("Taxa de Conclusão", f"{completion_rate:.1f}%")
     with col4:
-        cursor.execute("SELECT SUM(review_count) FROM progress")
-        total_reviews = cursor.fetchone()[0] or 0
         st.metric("Total de Revisões", f"{total_reviews}")
 
     return total_topics, completed_topics
 
 
-def display_completion_charts(conn, total_topics, completed_topics):
+def display_completion_charts(engine, total_topics, completed_topics):
     """Display completion rate and progress by section charts."""
     col1, col2 = st.columns(2)
 
@@ -45,9 +63,7 @@ def display_completion_charts(conn, total_topics, completed_topics):
         st.subheader("Taxa de Conclusão Geral")
 
         fig_donut = create_donut_chart(
-            completed=completed_topics,
-            total=total_topics,
-            show_percentage=True
+            completed=completed_topics, total=total_topics, show_percentage=True
         )
 
         st.plotly_chart(fig_donut, use_container_width=True)
@@ -56,17 +72,16 @@ def display_completion_charts(conn, total_topics, completed_topics):
     with col2:
         st.subheader("Progresso por Seção")
 
-        section_progress = get_section_progress(conn)
+        section_progress = get_section_progress(engine)
 
         fig_bar = create_progress_bar_chart(
-            section_progress=section_progress,
-            height=300
+            section_progress=section_progress, height=300
         )
 
         st.plotly_chart(fig_bar, use_container_width=True)
 
 
-def display_review_charts(conn):
+def display_review_charts(engine):
     """Display reviews per week line chart and topic distribution pie chart."""
     col3, col4 = st.columns(2)
 
@@ -74,17 +89,18 @@ def display_review_charts(conn):
     with col3:
         st.subheader("Revisões por Semana")
 
-        weekly_data = get_weekly_review_data(conn)
+        raw_data = db_get_weekly_review_data(engine)
+        weekly_df = _convert_weekly_data(raw_data)
 
         fig_line = create_line_chart(
-            data=weekly_data,
+            data=weekly_df,
             x_col="Semana",
             y_col="Revisões",
             x_axis_title="Semana",
             y_axis_title="Número de Revisões",
             height=300,
             markers=True,
-            hover_template="<b>%{x}</b><br>Revisões: %{y}"
+            hover_template="<b>%{x}</b><br>Revisões: %{y}",
         )
 
         st.plotly_chart(fig_line, use_container_width=True)
@@ -93,7 +109,7 @@ def display_review_charts(conn):
     with col4:
         st.subheader("Distribuição de Tópicos por Seção")
 
-        topic_dist = get_topic_distribution(conn)
+        topic_dist = _convert_topic_distribution(engine)
 
         fig_pie = create_pie_chart(
             data=topic_dist,
@@ -101,13 +117,13 @@ def display_review_charts(conn):
             names_col="Seção",
             hole_size=0.3,
             height=300,
-            hover_template="%{label}: %{value} tópicos (%{percent})"
+            hover_template="%{label}: %{value} tópicos (%{percent})",
         )
 
         st.plotly_chart(fig_pie, use_container_width=True)
 
 
-def display_export_section(conn):
+def display_export_section(engine):
     """Display data export functionality."""
     st.subheader("Exportar Dados")
 
@@ -115,7 +131,7 @@ def display_export_section(conn):
 
     with col_export1:
         if st.button("📥 Exportar Progresso para CSV", type="primary"):
-            df = export_to_csv(conn)
+            df = _export_to_csv(engine)
             csv = df.to_csv(index=False, encoding="utf-8-sig")
 
             st.download_button(
@@ -133,31 +149,24 @@ def display_export_section(conn):
         )
 
 
-def display_detailed_stats(cursor):
-    """Display detailed statistics table by section."""
+def display_detailed_stats(engine):
+    """Display detailed statistics table by section using ORM."""
     st.subheader("📈 Estatísticas Detalhadas")
 
-    cursor.execute("""
-        SELECT
-            secao,
-            COUNT(*) as total,
-            SUM(CASE WHEN p.completed_at IS NOT NULL THEN 1 ELSE 0 END) as concluidos
-        FROM topics t
-        LEFT JOIN progress p ON t.id = p.topic_id
-        GROUP BY secao
-        ORDER BY secao
-    """)
-
-    detailed_stats = cursor.fetchall()
+    detailed_stats = get_detailed_statistics_by_section(engine)
 
     if detailed_stats:
-        df_detailed = pd.DataFrame(
-            detailed_stats, columns=["Seção", "Total", "Concluídos"]
+        df_detailed = pd.DataFrame(detailed_stats)
+        df_detailed.rename(
+            columns={
+                "secao": "Seção",
+                "total": "Total",
+                "completed": "Concluídos",
+                "percentage": "Porcentagem",
+                "pending": "Pendentes",
+            },
+            inplace=True,
         )
-        df_detailed["Porcentagem"] = (
-            df_detailed["Concluídos"] / df_detailed["Total"] * 100
-        ).round(1)
-        df_detailed["Pendentes"] = df_detailed["Total"] - df_detailed["Concluídos"]
 
         st.dataframe(
             df_detailed,
@@ -179,21 +188,15 @@ def display_detailed_stats(cursor):
         )
 
 
+# --- Conversion helpers ---
 
 
-
-# Wrapper functions to convert db.py results to expected formats
-
-def get_weekly_review_data(conn):
-    """Wrapper to get weekly review data and convert to DataFrame."""
-    from db import get_weekly_review_data as db_get_weekly_review_data
-
-    data = db_get_weekly_review_data(conn)
-
-    if not data:
+def _convert_weekly_data(raw_data: list) -> pd.DataFrame:
+    """Convert raw weekly review data from db.py to DataFrame for charts."""
+    if not raw_data:
         return pd.DataFrame()
 
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(raw_data)
 
     # Convert review_date to datetime and group by week
     df["date"] = pd.to_datetime(df["review_date"])
@@ -206,29 +209,23 @@ def get_weekly_review_data(conn):
     return weekly_df
 
 
-def get_topic_distribution(conn):
-    """Wrapper to get topic distribution and convert to DataFrame."""
-    from db import get_topic_distribution_by_section
-
-    data = get_topic_distribution_by_section(conn)
+def _convert_topic_distribution(engine) -> pd.DataFrame:
+    """Convert topic distribution from db.py to DataFrame for charts."""
+    data = get_topic_distribution_by_section(engine)
 
     if not data:
         return pd.DataFrame()
 
-    # Convert to DataFrame with expected column names
-    df = pd.DataFrame([
-        {"Seção": item["secao"], "Total": item["total"]}
-        for item in data
-    ])
+    df = pd.DataFrame(
+        [{"Seção": item["secao"], "Total": item["total"]} for item in data]
+    )
 
     return df
 
 
-def export_to_csv(conn):
-    """Wrapper to export all progress data to CSV."""
-    from db import export_all_progress_to_dict
-
-    data = export_all_progress_to_dict(conn)
+def _export_to_csv(engine) -> pd.DataFrame:
+    """Convert all progress data to DataFrame for CSV export."""
+    data = export_all_progress_to_dict(engine)
 
     df = pd.DataFrame(data)
 
@@ -249,35 +246,37 @@ def export_to_csv(conn):
 
 def main():
     """Main function for statistics page - displays all study statistics."""
-    # Initialize database connection
-    conn = get_db()
+    # Initialize database engine
+    engine = get_db()
 
     # Page title
     st.title("📊 Estatísticas de Estudo")
 
-    # Get statistics
-    cursor = conn.cursor()
+    # Criar abas para organizar o conteúdo
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "📈 Visão Geral",
+        "📚 Por Seção",
+        "📅 Revisões",
+        "💾 Exportar"
+    ])
 
-    # Display key metrics row
-    total_topics, completed_topics = display_key_metrics(cursor)
+    with tab1:
+        # Métricas principais e gráficos de conclusão
+        total_topics, completed_topics = display_key_metrics(engine)
+        st.markdown("---")
+        display_completion_charts(engine, total_topics, completed_topics)
 
-    st.markdown("---")
+    with tab2:
+        # Progresso detalhado por seção
+        display_detailed_stats(engine)
 
-    # Display completion charts (donut + bar chart)
-    display_completion_charts(conn, total_topics, completed_topics)
+    with tab3:
+        # Análise de revisões
+        display_review_charts(engine)
 
-    # Display review charts (line + pie chart)
-    display_review_charts(conn)
-
-    st.markdown("---")
-
-    # Display export section
-    display_export_section(conn)
-
-    # Display detailed statistics table
-    st.markdown("---")
-    display_detailed_stats(cursor)
-
+    with tab4:
+        # Funcionalidades de exportação
+        display_export_section(engine)
 
 
 if __name__ == "__main__":

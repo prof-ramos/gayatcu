@@ -9,6 +9,8 @@ import os
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+import streamlit as st
+
 from sqlalchemy import UniqueConstraint, func
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
@@ -156,6 +158,7 @@ def get_topic_progress(engine: Any, topic_id: int) -> Optional[Dict[str, Any]]:
         }
 
 
+@st.cache_data(ttl=60)  # Cache por 1 minuto para dados dinâmicos
 def get_all_progress(engine: Any) -> List[Dict[str, Any]]:
     """
     Get progress information for all topics in the database.
@@ -310,7 +313,7 @@ def get_detailed_statistics_by_section(engine: Any) -> List[Dict[str, Any]]:
                 Topic.secao,
                 func.count(Topic.id).label("total"),
                 func.sum(
-                    func.case((Progress.completed_at != None, 1), else_=0)
+                    func.case((Progress.completed_at.is_not(None), 1), else_=0)
                 ).label("completed"),
             )
             .outerjoin(Progress, Topic.id == Progress.topic_id)
@@ -353,6 +356,7 @@ def get_weekly_review_data(engine: Any, weeks: int = 12) -> List[Dict[str, Any]]
     with Session(engine) as session:
         # Calculate the date N weeks ago
         from datetime import timedelta
+
         cutoff_date = datetime.now() - timedelta(days=days_back)
 
         statement = (
@@ -434,3 +438,70 @@ def export_all_progress_to_dict(engine: Any) -> List[Dict[str, Any]]:
 
         return output
 
+
+def unmark_topic_complete(engine: Any, topic_id: int) -> bool:
+    """
+    Unmark a topic as completed by setting completed_at to None.
+
+    Args:
+        engine: Database engine
+        topic_id: ID of the topic to unmark
+
+    Returns:
+        True if successful, False if topic/progress not found
+    """
+    with Session(engine) as session:
+        progress = session.get(Progress, topic_id)
+        if not progress:
+            return False
+
+        progress.completed_at = None
+        session.add(progress)
+        session.commit()
+        return True
+
+
+def get_upcoming_reviews(engine: Any, days: int = 30) -> List[Dict[str, Any]]:
+    """
+    Get topics scheduled for review in the next N days.
+
+    Args:
+        engine: Database engine
+        days: Number of days to look ahead (default: 30)
+
+    Returns:
+        List of topic dicts with review dates
+    """
+    today = datetime.now().strftime("%Y-%m-%d")
+    end_date = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
+
+    with Session(engine) as session:
+        statement = (
+            select(Topic, Progress)
+            .join(Progress)
+            .where(
+                Progress.completed_at.is_not(None),
+                Progress.next_review_date.is_not(None),
+                Progress.next_review_date > today,
+                Progress.next_review_date <= end_date,
+            )
+            .order_by(Progress.next_review_date)
+        )
+
+        results = session.exec(statement).all()
+
+        output = []
+        for topic, progress in results:
+            output.append(
+                {
+                    "id": topic.id,
+                    "codigo": topic.codigo,
+                    "secao": topic.secao,
+                    "subsecao": topic.subsecao,
+                    "titulo": topic.titulo,
+                    "next_review_date": progress.next_review_date,
+                    "review_count": progress.review_count or 0,
+                }
+            )
+
+        return output

@@ -120,3 +120,54 @@ def safe_db_operation(operation_func, default_value=None):
             return default_value
 
     return wrapper
+
+
+class SessionStateManager:
+    """Gerenciador centralizado de st.session_state."""
+
+    COMPLETED_PREFIX = "topic_completed_"
+    CONFIRM_PREFIX = "confirm_"
+    EXPANDER_PREFIX = "expander_"
+
+    @staticmethod
+    def set_topic_completed(topic_id: int, completed: bool):
+        """Define estado de conclusão do tópico."""
+        key = f"{SessionStateManager.COMPLETED_PREFIX}{topic_id}"
+        st.session_state[key] = completed
+
+    @staticmethod
+    def is_topic_completed(topic_id: int) -> bool:
+        """Verifica se tópico está concluído."""
+        key = f"{SessionStateManager.COMPLETED_PREFIX}{topic_id}"
+        return st.session_state.get(key, False)
+
+    @staticmethod
+    def set_expander_state(section_id: str, expanded: bool):
+        """Define estado de expander."""
+        key = f"{SessionStateManager.EXPANDER_PREFIX}{section_id}"
+        st.session_state[key] = expanded
+
+    @staticmethod
+    def get_expander_state(section_id: str) -> bool:
+        """Obtém estado de expander."""
+        key = f"{SessionStateManager.EXPANDER_PREFIX}{section_id}"
+        return st.session_state.get(key, False)
+
+    @staticmethod
+    def set_confirm_state(topic_id: int, confirmed: bool):
+        """Define estado de confirmação para diálogos."""
+        key = f"{SessionStateManager.CONFIRM_PREFIX}{topic_id}"
+        st.session_state[key] = confirmed
+
+    @staticmethod
+    def get_confirm_state(topic_id: int) -> bool:
+        """Obtém estado de confirmação para diálogos."""
+        key = f"{SessionStateManager.CONFIRM_PREFIX}{topic_id}"
+        return st.session_state.get(key, False)
+
+    @staticmethod
+    def clear_confirm_state(topic_id: int):
+        """Limpa estado de confirmação após uso."""
+        key = f"{SessionStateManager.CONFIRM_PREFIX}{topic_id}"
+        if key in st.session_state:
+            del st.session_state[key]

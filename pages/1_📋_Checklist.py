@@ -7,11 +7,28 @@ per subsection.
 """
 
 import streamlit as st
-from session import get_db
-from db import mark_topic_complete, get_all_progress
+
+from db import get_all_progress, mark_topic_complete, unmark_topic_complete
+from session import SessionStateManager, get_db
 from utils import load_content
 
 st.set_page_config(page_title="Checklist", page_icon="📋", layout="wide")
+
+
+@st.dialog("Confirmar Conclusão")
+def confirm_completion(topic_title: str, topic_id: int):
+    """Exibir diálogo de confirmação antes de marcar como concluído."""
+    st.write(f"Tem certeza que deseja marcar **{topic_title}** como concluído?")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("✅ Confirmar", type="primary", key=f"confirm_yes_{topic_id}"):
+            SessionStateManager.set_confirm_state(topic_id, True)
+            st.rerun()
+    with col2:
+        if st.button("❌ Cancelar", key=f"confirm_no_{topic_id}"):
+            SessionStateManager.set_confirm_state(topic_id, False)
+            st.rerun()
 
 
 def get_subsection_completion(progress_data, section_title, subsection_title):
@@ -45,8 +62,8 @@ def get_subsection_completion(progress_data, section_title, subsection_title):
 def main():
     st.title("📋 Checklist de Estudos")
 
-    # Get database connection from centralized session module
-    conn = get_db()
+    # Get database engine from centralized session module
+    engine = get_db()
 
     # Load content from JSON
     try:
@@ -56,7 +73,7 @@ def main():
         return
 
     # Get all progress data from database
-    progress_data = get_all_progress(conn)
+    progress_data = get_all_progress(engine)
 
     # Create a dictionary for quick lookup of completion status
     completion_status = {p["id"]: p["completed_at"] is not None for p in progress_data}
@@ -104,20 +121,22 @@ def main():
                         topic["codigo"],
                         section["titulo"],
                         subsection_title,
-                        topic["titulo"]
+                        topic["titulo"],
                     )
                     topic_id = progress_lookup.get(lookup_key)
 
                     if topic_id is None:
                         st.warning(
-                            f"Tópico não encontrado no banco: {topic['codigo']} - {topic['titulo']}"
+                            f"Tópico não encontrado no banco: "
+                            f"{topic['codigo']} - {topic['titulo']}"
                         )
                         continue
 
                     # Get current completion status
                     is_completed = completion_status.get(topic_id, False)
 
-                    # Create a unique key for the checkbox using index to avoid duplicates
+                    # Unique key for checkbox using index
+                    # to avoid duplicates
                     checkbox_key = (
                         f"topic_{topic_id}_{topic_idx}_{subsection_title[:20]}"
                     )
@@ -139,22 +158,23 @@ def main():
                     # Check if checkbox state changed
                     if new_state != is_completed:
                         if new_state:
-                            # Mark as complete
-                            if mark_topic_complete(conn, topic_id):
-                                st.success(
-                                    f"✓ Marcado como concluído: {topic['titulo']}"
-                                )
-                                completion_status[topic_id] = True
+                            # Check if already confirmed
+                            if not SessionStateManager.get_confirm_state(topic_id):
+                                # Show confirmation dialog
+                                confirm_completion(topic['titulo'], topic_id)
+                            else:
+                                # Mark as complete
+                                if mark_topic_complete(engine, topic_id):
+                                    st.success(
+                                        f"✓ Marcado como concluído: {topic['titulo']}"
+                                    )
+                                    completion_status[topic_id] = True
+                                    SessionStateManager.clear_confirm_state(topic_id)
                         else:
-                            # Unmark completion (delete from progress)
-                            cursor = conn.cursor()
-                            cursor.execute(
-                                "UPDATE progress SET completed_at = NULL WHERE topic_id = ?",
-                                (topic_id,),
-                            )
-                            conn.commit()
-                            st.info(f"○ Desmarcado: {topic['titulo']}")
-                            completion_status[topic_id] = False
+                            # Unmark completion via ORM (no confirmation needed)
+                            if unmark_topic_complete(engine, topic_id):
+                                st.info(f"○ Desmarcado: {topic['titulo']}")
+                                completion_status[topic_id] = False
 
                         # Force rerun to update UI
                         st.rerun()

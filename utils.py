@@ -2,6 +2,8 @@ import datetime
 import json
 from typing import Any, Dict, List, Optional
 
+import streamlit as st
+
 from sqlalchemy import func
 from sqlmodel import Session, select
 
@@ -10,6 +12,7 @@ from db import Progress, Topic
 INTERVALS = [1, 7, 15, 30]
 
 
+@st.cache_data(ttl=300)  # Cache por 5 minutos
 def load_content(json_path: str = "conteudo.json") -> Dict[str, Any]:
     """
     Load and validate JSON content from file.
