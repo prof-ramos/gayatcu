@@ -572,44 +572,66 @@ def import_topics_from_json(engine: Engine, json_path: str = "conteudo.json") ->
     with open(json_path, encoding="utf-8") as f:
         sections = json.load(f)
 
+    parsed_topics: list[tuple[str, str, str, str]] = []
+    for section in sections:
+        secao_titulo = section.get("titulo", "")
+        for subsecao in section.get("subsecoes", []):
+            subsecao_titulo = subsecao.get("titulo", "")
+            for topico in subsecao.get("topicos", []):
+                parsed_topics.append(
+                    (
+                        str(topico.get("codigo", "")),
+                        str(secao_titulo),
+                        str(subsecao_titulo),
+                        str(topico.get("titulo", "")),
+                    )
+                )
+
     imported_count = 0
     updated_count = 0
 
     with Session(engine) as session:
-        for section in sections:
-            secao_titulo = section.get("titulo", "")
-            for subsecao in section.get("subsecoes", []):
-                subsecao_titulo = subsecao.get("titulo", "")
-                for topico in subsecao.get("topicos", []):
-                    codigo = topico.get("codigo", "")
-                    titulo = topico.get("titulo", "")
+        existing_topics = session.exec(select(Topic)).all()
+        topic_by_key = {
+            (topic.codigo, topic.secao, topic.subsecao): topic for topic in existing_topics
+        }
 
-                    try:
-                        # Savepoint per row to tolerate concurrent inserts on first deploy.
-                        with session.begin_nested():
-                            statement = select(Topic).where(
-                                Topic.codigo == codigo,
-                                Topic.secao == secao_titulo,
-                                Topic.subsecao == subsecao_titulo,
-                            )
-                            existing = session.exec(statement).first()
+        for codigo, secao_titulo, subsecao_titulo, titulo in parsed_topics:
+            topic_key = (codigo, secao_titulo, subsecao_titulo)
+            existing = topic_by_key.get(topic_key)
 
-                            if not existing:
-                                new_topic = Topic(
-                                    codigo=codigo,
-                                    secao=secao_titulo,
-                                    subsecao=subsecao_titulo,
-                                    titulo=titulo,
-                                )
-                                session.add(new_topic)
-                                imported_count += 1
-                            elif existing.titulo != titulo:
-                                existing.titulo = titulo
-                                session.add(existing)
-                                updated_count += 1
-                    except IntegrityError:
-                        # Another worker/session inserted the same natural key first.
-                        continue
+            if existing is not None:
+                if existing.titulo != titulo:
+                    existing.titulo = titulo
+                    session.add(existing)
+                    updated_count += 1
+                continue
+
+            try:
+                # Savepoint per insert to tolerate concurrent first-start imports.
+                with session.begin_nested():
+                    new_topic = Topic(
+                        codigo=codigo,
+                        secao=secao_titulo,
+                        subsecao=subsecao_titulo,
+                        titulo=titulo,
+                    )
+                    session.add(new_topic)
+                    session.flush()
+                    topic_by_key[topic_key] = new_topic
+                    imported_count += 1
+            except IntegrityError:
+                # Another worker/session inserted the same natural key first.
+                with session.no_autoflush:
+                    existing = session.exec(
+                        select(Topic).where(
+                            Topic.codigo == codigo,
+                            Topic.secao == secao_titulo,
+                            Topic.subsecao == subsecao_titulo,
+                        )
+                    ).first()
+                if existing is not None:
+                    topic_by_key[topic_key] = existing
 
         session.commit()
 

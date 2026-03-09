@@ -19,6 +19,8 @@ from db import Topic, import_topics_from_json, init_db, restore_snapshot_from_re
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+_SYNC_ON_STARTUP_ENV = "SYNC_TOPICS_ON_STARTUP"
+
 # psutil is optional on some cloud builds; fallback gracefully if unavailable.
 try:
     import psutil
@@ -111,6 +113,26 @@ def get_db() -> Engine:
         return get_db_connection()
 
 
+def _should_sync_catalog(engine: Engine) -> bool:
+    """
+    Decide if catalog sync from conteudo.json should run on startup.
+
+    Defaults:
+    - SQLite/local: enabled (developer convenience)
+    - PostgreSQL/cloud: disabled to avoid heavy work on every rerun
+    Override by setting SYNC_TOPICS_ON_STARTUP=1.
+    """
+    force_sync = os.getenv(_SYNC_ON_STARTUP_ENV, "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+    if force_sync:
+        return True
+    return engine.dialect.name == "sqlite"
+
+
 def initialize_database() -> bool:
     """
     Initialize the database schema and import data if needed.
@@ -150,18 +172,36 @@ def initialize_database() -> bool:
 
             imported = import_topics_from_json(engine)
             logger.info(f"Imported {imported} topics successfully")
+
+            # Recheck count to tolerate concurrent startup imports from other workers.
+            with Session(engine) as session:
+                topic_count_after_import = (
+                    session.exec(select(func.count(Topic.id))).first() or 0
+                )
+            if topic_count_after_import == 0:
+                logger.warning(
+                    "Import concluído sem tópicos persistidos; app seguirá sem catálogo."
+                )
             return True
         else:
-            # Keep topic catalog synchronized with conteudo.json (new topics/title fixes)
-            try:
-                imported = import_topics_from_json(engine)
-                if imported > 0:
-                    logger.info(
-                        "Catalog sync added %s new topics from conteudo.json", imported
+            if _should_sync_catalog(engine):
+                # Keep topic catalog synchronized with conteudo.json (new topics/title fixes)
+                try:
+                    imported = import_topics_from_json(engine)
+                    if imported > 0:
+                        logger.info(
+                            "Catalog sync added %s new topics from conteudo.json",
+                            imported,
+                        )
+                except FileNotFoundError:
+                    logger.warning(
+                        "conteudo.json não encontrado para sync; mantendo catálogo atual"
                     )
-            except FileNotFoundError:
-                logger.warning(
-                    "conteudo.json não encontrado para sync; mantendo catálogo atual"
+            else:
+                logger.info(
+                    "Catalog sync skipped on startup for non-SQLite DB "
+                    "(set %s=1 to force sync).",
+                    _SYNC_ON_STARTUP_ENV,
                 )
             logger.info(f"Database already contains {topic_count} topics")
             return True
