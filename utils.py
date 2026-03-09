@@ -1,8 +1,7 @@
-import json
 import datetime
+import json
 import sqlite3
-from typing import Optional, List, Dict, Any
-
+from typing import Any, Dict, List, Optional
 
 INTERVALS = [1, 7, 15, 30]
 
@@ -21,7 +20,7 @@ def load_content(json_path: str = "conteudo.json") -> Dict[str, Any]:
         FileNotFoundError: If the JSON file doesn't exist
         json.JSONDecodeError: If the file contains invalid JSON
     """
-    with open(json_path, 'r', encoding='utf-8') as f:
+    with open(json_path, "r", encoding="utf-8") as f:
         content = json.load(f)
     return content
 
@@ -64,7 +63,10 @@ def format_date(date_str: Optional[str]) -> str:
         return ""
 
     try:
-        date_obj = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        if "T" in date_str:
+            date_obj = datetime.datetime.fromisoformat(date_str).date()
+        else:
+            date_obj = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
         return date_obj.strftime("%d/%m/%Y")
     except (ValueError, TypeError):
         return ""
@@ -127,11 +129,13 @@ def get_section_progress(conn: sqlite3.Connection) -> List[Dict[str, Any]]:
     for row in cursor.fetchall():
         section, total, completed = row
         percentage = (completed / total * 100.0) if total > 0 else 0.0
-        results.append({
-            'section': section,
-            'total': total,
-            'completed': completed,
-            'percentage': percentage
-        })
+        results.append(
+            {
+                "section": section,
+                "total": total,
+                "completed": completed,
+                "percentage": percentage,
+            }
+        )
 
     return results
