@@ -68,6 +68,20 @@ def init_db(db_path: str = "data/study_tracker.db") -> Engine:
     return engine
 
 
+def _invalidate_progress_cache() -> None:
+    """
+    Invalidate cached progress queries after write operations.
+
+    get_all_progress() uses st.cache_data and excludes `_engine` from hashing,
+    so writes must explicitly clear cache to avoid stale UI state.
+    """
+    try:
+        get_all_progress.clear()
+    except Exception:
+        # Cache clear can fail in non-Streamlit runtimes; ignore safely.
+        pass
+
+
 def import_topics_from_json(engine: Engine, json_path: str = "conteudo.json") -> int:
     """
     Import topics from JSON file into the database.
@@ -105,6 +119,7 @@ def import_topics_from_json(engine: Engine, json_path: str = "conteudo.json") ->
 
         session.commit()
 
+    _invalidate_progress_cache()
     return imported_count
 
 
@@ -135,6 +150,7 @@ def mark_topic_complete(engine: Engine, topic_id: int) -> bool:
             session.add(progress)
 
         session.commit()
+        _invalidate_progress_cache()
         return True
 
 
@@ -281,6 +297,7 @@ def mark_review_complete(engine: Engine, topic_id: int, interval: int) -> bool:
 
         session.add(progress)
         session.commit()
+        _invalidate_progress_cache()
         return True
 
 
@@ -489,6 +506,7 @@ def unmark_topic_complete(engine: Engine, topic_id: int) -> bool:
         progress.next_review_date = None
         session.add(progress)
         session.commit()
+        _invalidate_progress_cache()
         return True
 
 

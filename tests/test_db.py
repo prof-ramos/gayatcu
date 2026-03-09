@@ -183,6 +183,43 @@ class TestGetAllProgress:
         assert result["total"] == 3
         assert len(result["data"]) == 2
 
+    def test_cache_invalidation_after_mark_topic_complete(self, engine, sample_json):
+        """Após marcar, get_all_progress deve refletir alteração sem aguardar TTL."""
+        import_topics_from_json(engine, sample_json)
+        get_all_progress.clear()
+
+        before = get_all_progress(engine)
+        before_item = next((p for p in before if p["id"] == 1), None)
+        assert before_item is not None
+        assert before_item["completed_at"] is None
+
+        assert mark_topic_complete(engine, 1) is True
+
+        after = get_all_progress(engine)
+        after_item = next((p for p in after if p["id"] == 1), None)
+        assert after_item is not None
+        assert after_item["completed_at"] is not None
+
+    def test_cache_invalidation_after_unmark_topic_complete(
+        self, engine, sample_json
+    ):
+        """Após desmarcar, get_all_progress deve refletir alteração sem aguardar TTL."""
+        import_topics_from_json(engine, sample_json)
+        assert mark_topic_complete(engine, 1) is True
+        get_all_progress.clear()
+
+        before = get_all_progress(engine)
+        before_item = next((p for p in before if p["id"] == 1), None)
+        assert before_item is not None
+        assert before_item["completed_at"] is not None
+
+        assert unmark_topic_complete(engine, 1) is True
+
+        after = get_all_progress(engine)
+        after_item = next((p for p in after if p["id"] == 1), None)
+        assert after_item is not None
+        assert after_item["completed_at"] is None
+
 
 class TestReviews:
     """Testes para sistema de revisões (SRS)."""
@@ -217,6 +254,24 @@ class TestReviews:
             assert progress.review_count == 1
             assert progress.last_reviewed_at is not None
             assert progress.next_review_date is not None
+
+    def test_cache_invalidation_after_mark_review_complete(self, engine, sample_json):
+        """Após revisão, cache de progresso deve refletir review_count atualizado."""
+        import_topics_from_json(engine, sample_json)
+        assert mark_topic_complete(engine, 1) is True
+        get_all_progress.clear()
+
+        before = get_all_progress(engine)
+        before_item = next((p for p in before if p["id"] == 1), None)
+        assert before_item is not None
+        assert before_item["review_count"] == 0
+
+        assert mark_review_complete(engine, 1, 7) is True
+
+        after = get_all_progress(engine)
+        after_item = next((p for p in after if p["id"] == 1), None)
+        assert after_item is not None
+        assert after_item["review_count"] == 1
 
     def test_mark_review_nonexistent(self, engine):
         """Deve retornar False para progress inexistente."""
