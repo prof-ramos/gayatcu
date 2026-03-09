@@ -66,7 +66,7 @@ def display_completion_charts(engine, total_topics, completed_topics):
             completed=completed_topics, total=total_topics, show_percentage=True
         )
 
-        st.plotly_chart(fig_donut, use_container_width=True)
+        st.plotly_chart(fig_donut, width="stretch")
 
     # Progress by section bar chart
     with col2:
@@ -78,7 +78,7 @@ def display_completion_charts(engine, total_topics, completed_topics):
             section_progress=section_progress, height=300
         )
 
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(fig_bar, width="stretch")
 
 
 def display_review_charts(engine):
@@ -103,7 +103,7 @@ def display_review_charts(engine):
             hover_template="<b>%{x}</b><br>Revisões: %{y}",
         )
 
-        st.plotly_chart(fig_line, use_container_width=True)
+        st.plotly_chart(fig_line, width="stretch")
 
     # Topic distribution pie chart
     with col4:
@@ -120,7 +120,7 @@ def display_review_charts(engine):
             hover_template="%{label}: %{value} tópicos (%{percent})",
         )
 
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, width="stretch")
 
 
 def display_export_section(engine):
@@ -170,7 +170,7 @@ def display_detailed_stats(engine):
 
         st.dataframe(
             df_detailed,
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
             column_config={
                 "Seção": st.column_config.TextColumn("Seção", width="medium"),

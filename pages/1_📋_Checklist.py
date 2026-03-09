@@ -151,8 +151,9 @@ def main():
                     # Display checkbox with topic title
                     col_check, col_text = st.columns([1, 12])
                     with col_check:
+                        checkbox_label = topic["titulo"] or f"Tópico {topic['codigo']}"
                         new_state = st.checkbox(
-                            topic["titulo"],
+                            checkbox_label,
                             value=is_completed,
                             key=checkbox_key,
                             label_visibility="collapsed",

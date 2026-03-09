@@ -96,7 +96,7 @@ def display_topic_card(topic: dict, key: str, engine):
             current_level = min(topic["review_count"], len(INTERVALS) - 1)
             next_interval = calculate_next_review(current_level, True)
 
-            if st.button("✓ Concluir", key=f"complete_{key}", use_container_width=True):
+            if st.button("✓ Concluir", key=f"complete_{key}", width="stretch"):
                 if mark_review_complete(engine, topic["id"], next_interval):
                     st.success("Revisão registrada!")
                     st.rerun()

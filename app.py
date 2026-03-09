@@ -249,7 +249,7 @@ def main():
                 show_percentage=True,
             )
 
-            st.plotly_chart(fig_donut, use_container_width=True)
+            st.plotly_chart(fig_donut, width="stretch")
 
         with col2:
             st.subheader("📈 Progresso por Disciplina")
@@ -261,7 +261,7 @@ def main():
                     color_scale="RdYlGn",  # Red-Yellow-Green scale
                 )
 
-                st.plotly_chart(fig_bar, use_container_width=True)
+                st.plotly_chart(fig_bar, width="stretch")
             else:
                 st.info("Nenhum dado de progresso disponível.")
 
@@ -277,15 +277,15 @@ def main():
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            if st.button("📋 Ver Checklist", use_container_width=True, type="primary"):
+            if st.button("📋 Ver Checklist", width="stretch", type="primary"):
                 st.switch_page("pages/1_📋_Checklist.py")
 
         with col2:
-            if st.button("📅 Ver Revisões", use_container_width=True):
+            if st.button("📅 Ver Revisões", width="stretch"):
                 st.switch_page("pages/2_📅_Revisoes.py")
 
         with col3:
-            if st.button("📊 Ver Estatísticas", use_container_width=True):
+            if st.button("📊 Ver Estatísticas", width="stretch"):
                 st.switch_page("pages/3_📊_Estatisticas.py")
 
         # Footer info
