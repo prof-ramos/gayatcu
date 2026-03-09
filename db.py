@@ -14,7 +14,7 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from urllib.request import Request, urlopen
 
 import streamlit as st
-from sqlalchemy import Engine, UniqueConstraint, case, func
+from sqlalchemy import Engine, UniqueConstraint, case, func, text
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 logger = logging.getLogger(__name__)
@@ -30,6 +30,7 @@ _DB_URL_ENV_KEYS = (
     "POSTGRES_PRISMA_URL",
 )
 _UNSUPPORTED_DB_QUERY_PARAMS = {"pgbouncer", "supa"}
+_POSTGRES_SCHEMA_LOCK_ID = 2026030901
 
 # --- Models ---
 
@@ -163,7 +164,24 @@ def init_db(db_path: str | None = None) -> Engine:
             connect_args={"prepare_threshold": None},
         )
 
-    SQLModel.metadata.create_all(engine)
+    if is_sqlite:
+        SQLModel.metadata.create_all(engine)
+    elif db_url.startswith("postgresql+psycopg://"):
+        # Serialize DDL to avoid race conditions in multi-session deployments.
+        with engine.begin() as conn:
+            conn.execute(
+                text("SELECT pg_advisory_lock(:lock_id)"),
+                {"lock_id": _POSTGRES_SCHEMA_LOCK_ID},
+            )
+            try:
+                SQLModel.metadata.create_all(conn)
+            finally:
+                conn.execute(
+                    text("SELECT pg_advisory_unlock(:lock_id)"),
+                    {"lock_id": _POSTGRES_SCHEMA_LOCK_ID},
+                )
+    else:
+        SQLModel.metadata.create_all(engine)
     return engine
 
 
