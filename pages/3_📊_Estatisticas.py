@@ -1,100 +1,16 @@
 import streamlit as st
-import plotly.express as px
-import plotly.graph_objects as go
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 from session import get_db
-from utils import get_completion_percentage, get_section_progress
+from utils import get_section_progress
+from components import create_donut_chart, create_progress_bar_chart, create_line_chart, create_pie_chart
+from db import get_detailed_statistics_by_section, get_weekly_review_data, get_topic_distribution_by_section, export_all_progress_to_dict
 
 st.set_page_config(page_title="Estatísticas", page_icon="📊", layout="wide")
 
-def get_weekly_review_data(conn):
-    """Get review counts per week for the last 12 weeks."""
-    cursor = conn.cursor()
 
-    # Get reviews from the last 12 weeks
-    cursor.execute("""
-        SELECT
-            DATE(reviewed_at) as review_date,
-            COUNT(*) as count
-        FROM review_log
-        WHERE reviewed_at >= DATE('now', '-84 days')
-        GROUP BY DATE(reviewed_at)
-        ORDER BY review_date
-    """)
-
-    rows = cursor.fetchall()
-
-    if not rows:
-        return pd.DataFrame()
-
-    df = pd.DataFrame(rows, columns=['date', 'count'])
-    df['date'] = pd.to_datetime(df['date'])
-    df['week'] = df['date'].dt.to_period('W').apply(lambda r: r.start_time)
-
-    # Group by week
-    weekly_df = df.groupby('week')['count'].sum().reset_index()
-    weekly_df.columns = ['Semana', 'Revisões']
-
-    return weekly_df
-
-def get_topic_distribution(conn):
-    """Get topic distribution by section."""
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            secao,
-            COUNT(*) as count
-        FROM topics
-        GROUP BY secao
-        ORDER BY count DESC
-    """)
-
-    rows = cursor.fetchall()
-
-    if not rows:
-        return pd.DataFrame()
-
-    return pd.DataFrame(rows, columns=['Seção', 'Total'])
-
-def export_to_csv(conn):
-    """Export all progress data to CSV."""
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            t.codigo,
-            t.secao,
-            t.subsecao,
-            t.titulo,
-            p.completed_at,
-            p.last_reviewed_at,
-            p.review_count,
-            p.next_review_date
-        FROM topics t
-        LEFT JOIN progress p ON t.id = p.topic_id
-        ORDER BY t.secao, t.subsecao, t.codigo
-    """)
-
-    rows = cursor.fetchall()
-
-    df = pd.DataFrame(rows, columns=['Código', 'Seção', 'Subseção', 'Título',
-                                      'Concluído em', 'Última Revisão',
-                                      'Contagem de Revisões', 'Próxima Revisão'])
-
-    return df
-
-def main():
-    # Initialize database connection
-    conn = get_db()
-
-    # Page title
-    st.title("📊 Estatísticas de Estudo")
-
-    # Get statistics
-    cursor = conn.cursor()
-
+def display_key_metrics(cursor):
+    """Display top row with key study metrics."""
     # Overall completion rate
     cursor.execute("SELECT COUNT(*) FROM topics")
     total_topics = cursor.fetchone()[0]
@@ -117,28 +33,22 @@ def main():
         total_reviews = cursor.fetchone()[0] or 0
         st.metric("Total de Revisões", f"{total_reviews}")
 
-    st.markdown("---")
+    return total_topics, completed_topics
 
-    # Charts in grid layout
+
+def display_completion_charts(conn, total_topics, completed_topics):
+    """Display completion rate and progress by section charts."""
     col1, col2 = st.columns(2)
 
     # Overall completion rate donut chart
     with col1:
         st.subheader("Taxa de Conclusão Geral")
 
-        fig_donut = go.Figure(data=[go.Pie(
-            labels=['Concluídos', 'Pendentes'],
-            values=[completed_topics, total_topics - completed_topics],
-            hole=.5,
-            marker=dict(colors=['#00CC96', '#EF553B'])
-        )])
-
-        fig_donut.update_layout(
-            annotations=[dict(text=f'{completion_rate:.1f}%', x=0.5, y=0.5,
-                             font_size=20, showarrow=False)]
+        fig_donut = create_donut_chart(
+            completed=completed_topics,
+            total=total_topics,
+            show_percentage=True
         )
-
-        fig_donut.update_traces(hovertemplate='%{label}: %{value} tópicos')
 
         st.plotly_chart(fig_donut, use_container_width=True)
 
@@ -148,32 +58,16 @@ def main():
 
         section_progress = get_section_progress(conn)
 
-        if section_progress:
-            df_sections = pd.DataFrame(section_progress)
+        fig_bar = create_progress_bar_chart(
+            section_progress=section_progress,
+            height=300
+        )
 
-            fig_bar = px.bar(
-                df_sections,
-                x='percentage',
-                y='section',
-                orientation='h',
-                labels={'percentage': 'Porcentagem (%)', 'section': 'Seção'},
-                title='',
-                color='percentage',
-                color_continuous_scale='Viridis'
-            )
+        st.plotly_chart(fig_bar, use_container_width=True)
 
-            fig_bar.update_layout(
-                xaxis_title='Porcentagem (%)',
-                yaxis_title='Seção',
-                showlegend=False,
-                height=300
-            )
 
-            st.plotly_chart(fig_bar, use_container_width=True)
-        else:
-            st.info("Nenhum dado de progresso disponível.")
-
-    # Second row: Line chart and Pie chart
+def display_review_charts(conn):
+    """Display reviews per week line chart and topic distribution pie chart."""
     col3, col4 = st.columns(2)
 
     # Reviews per week line chart
@@ -182,30 +76,18 @@ def main():
 
         weekly_data = get_weekly_review_data(conn)
 
-        if not weekly_data.empty:
-            fig_line = px.line(
-                weekly_data,
-                x='Semana',
-                y='Revisões',
-                markers=True,
-                labels={'Semana': 'Semana', 'Revisões': 'Número de Revisões'},
-                title=''
-            )
+        fig_line = create_line_chart(
+            data=weekly_data,
+            x_col="Semana",
+            y_col="Revisões",
+            x_axis_title="Semana",
+            y_axis_title="Número de Revisões",
+            height=300,
+            markers=True,
+            hover_template="<b>%{x}</b><br>Revisões: %{y}"
+        )
 
-            fig_line.update_layout(
-                xaxis_title='Semana',
-                yaxis_title='Número de Revisões',
-                hovermode='x unified',
-                height=300
-            )
-
-            fig_line.update_traces(
-                hovertemplate='<b>%{x}</b><br>Revisões: %{y}'
-            )
-
-            st.plotly_chart(fig_line, use_container_width=True)
-        else:
-            st.info("Nenhum dado de revisão disponível ainda.")
+        st.plotly_chart(fig_line, use_container_width=True)
 
     # Topic distribution pie chart
     with col4:
@@ -213,31 +95,20 @@ def main():
 
         topic_dist = get_topic_distribution(conn)
 
-        if not topic_dist.empty:
-            fig_pie = px.pie(
-                topic_dist,
-                values='Total',
-                names='Seção',
-                title='',
-                hole=0.3
-            )
+        fig_pie = create_pie_chart(
+            data=topic_dist,
+            values_col="Total",
+            names_col="Seção",
+            hole_size=0.3,
+            height=300,
+            hover_template="%{label}: %{value} tópicos (%{percent})"
+        )
 
-            fig_pie.update_layout(
-                showlegend=True,
-                height=300
-            )
+        st.plotly_chart(fig_pie, use_container_width=True)
 
-            fig_pie.update_traces(
-                hovertemplate='%{label}: %{value} tópicos (%{percent})'
-            )
 
-            st.plotly_chart(fig_pie, use_container_width=True)
-        else:
-            st.info("Nenhum dado de tópicos disponível.")
-
-    st.markdown("---")
-
-    # Export section
+def display_export_section(conn):
+    """Display data export functionality."""
     st.subheader("Exportar Dados")
 
     col_export1, col_export2 = st.columns(2)
@@ -245,14 +116,14 @@ def main():
     with col_export1:
         if st.button("📥 Exportar Progresso para CSV", type="primary"):
             df = export_to_csv(conn)
-            csv = df.to_csv(index=False, encoding='utf-8-sig')
+            csv = df.to_csv(index=False, encoding="utf-8-sig")
 
             st.download_button(
                 label="⬇️ Baixar arquivo CSV",
                 data=csv,
-                file_name=f'progresso_estudos_{datetime.now().strftime("%Y%m%d")}.csv',
-                mime='text/csv',
-                key='download_csv'
+                file_name=f"progresso_estudos_{datetime.now().strftime('%Y%m%d')}.csv",
+                mime="text/csv",
+                key="download_csv",
             )
 
     with col_export2:
@@ -261,8 +132,9 @@ def main():
             "incluindo datas de conclusão, revisões e próximos agendamentos."
         )
 
-    # Additional statistics
-    st.markdown("---")
+
+def display_detailed_stats(cursor):
+    """Display detailed statistics table by section."""
     st.subheader("📈 Estatísticas Detalhadas")
 
     cursor.execute("""
@@ -279,9 +151,13 @@ def main():
     detailed_stats = cursor.fetchall()
 
     if detailed_stats:
-        df_detailed = pd.DataFrame(detailed_stats, columns=['Seção', 'Total', 'Concluídos'])
-        df_detailed['Porcentagem'] = (df_detailed['Concluídos'] / df_detailed['Total'] * 100).round(1)
-        df_detailed['Pendentes'] = df_detailed['Total'] - df_detailed['Concluídos']
+        df_detailed = pd.DataFrame(
+            detailed_stats, columns=["Seção", "Total", "Concluídos"]
+        )
+        df_detailed["Porcentagem"] = (
+            df_detailed["Concluídos"] / df_detailed["Total"] * 100
+        ).round(1)
+        df_detailed["Pendentes"] = df_detailed["Total"] - df_detailed["Concluídos"]
 
         st.dataframe(
             df_detailed,
@@ -289,17 +165,120 @@ def main():
             hide_index=True,
             column_config={
                 "Seção": st.column_config.TextColumn("Seção", width="medium"),
-                "Total": st.column_config.NumberColumn("Total de Tópicos", width="small"),
-                "Concluídos": st.column_config.NumberColumn("Concluídos", width="small"),
+                "Total": st.column_config.NumberColumn(
+                    "Total de Tópicos", width="small"
+                ),
+                "Concluídos": st.column_config.NumberColumn(
+                    "Concluídos", width="small"
+                ),
                 "Pendentes": st.column_config.NumberColumn("Pendentes", width="small"),
                 "Porcentagem": st.column_config.ProgressColumn(
-                    "Progresso",
-                    format="%.1f%%",
-                    min_value=0,
-                    max_value=100
-                )
-            }
+                    "Progresso", format="%.1f%%", min_value=0, max_value=100
+                ),
+            },
         )
+
+
+
+
+
+# Wrapper functions to convert db.py results to expected formats
+
+def get_weekly_review_data(conn):
+    """Wrapper to get weekly review data and convert to DataFrame."""
+    from db import get_weekly_review_data as db_get_weekly_review_data
+
+    data = db_get_weekly_review_data(conn)
+
+    if not data:
+        return pd.DataFrame()
+
+    df = pd.DataFrame(data)
+
+    # Convert review_date to datetime and group by week
+    df["date"] = pd.to_datetime(df["review_date"])
+    df["week"] = df["date"].dt.to_period("W").apply(lambda r: r.start_time)
+
+    # Group by week
+    weekly_df = df.groupby("week")["count"].sum().reset_index()
+    weekly_df.columns = ["Semana", "Revisões"]
+
+    return weekly_df
+
+
+def get_topic_distribution(conn):
+    """Wrapper to get topic distribution and convert to DataFrame."""
+    from db import get_topic_distribution_by_section
+
+    data = get_topic_distribution_by_section(conn)
+
+    if not data:
+        return pd.DataFrame()
+
+    # Convert to DataFrame with expected column names
+    df = pd.DataFrame([
+        {"Seção": item["secao"], "Total": item["total"]}
+        for item in data
+    ])
+
+    return df
+
+
+def export_to_csv(conn):
+    """Wrapper to export all progress data to CSV."""
+    from db import export_all_progress_to_dict
+
+    data = export_all_progress_to_dict(conn)
+
+    df = pd.DataFrame(data)
+
+    # Rename columns to Portuguese
+    df.columns = [
+        "Código",
+        "Seção",
+        "Subseção",
+        "Título",
+        "Concluído em",
+        "Última Revisão",
+        "Contagem de Revisões",
+        "Próxima Revisão",
+    ]
+
+    return df
+
+
+def main():
+    """Main function for statistics page - displays all study statistics."""
+    # Initialize database connection
+    conn = get_db()
+
+    # Page title
+    st.title("📊 Estatísticas de Estudo")
+
+    # Get statistics
+    cursor = conn.cursor()
+
+    # Display key metrics row
+    total_topics, completed_topics = display_key_metrics(cursor)
+
+    st.markdown("---")
+
+    # Display completion charts (donut + bar chart)
+    display_completion_charts(conn, total_topics, completed_topics)
+
+    # Display review charts (line + pie chart)
+    display_review_charts(conn)
+
+    st.markdown("---")
+
+    # Display export section
+    display_export_section(conn)
+
+    # Display detailed statistics table
+    st.markdown("---")
+    display_detailed_stats(cursor)
+
+
 
 if __name__ == "__main__":
     main()

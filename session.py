@@ -6,18 +6,20 @@ following Streamlit best practices.
 """
 
 import logging
-import sqlite3
+from typing import Any
 
 import streamlit as st
+from sqlalchemy import func
+from sqlmodel import Session, select
 
-from db import init_db
+from db import Topic, import_topics_from_json, init_db
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def get_db_connection() -> sqlite3.Connection:
+def get_db_connection() -> Any:
     """
     Get a database connection with thread safety enabled.
 
@@ -25,29 +27,29 @@ def get_db_connection() -> sqlite3.Connection:
     The connection is cached in st.session_state to reuse within the same session.
 
     Returns:
-        sqlite3.Connection: Active database connection with row factory enabled
+        Any: Active database engine
     """
     try:
         # Create connection and automatically initialize schema and directories
-        conn = init_db("data/study_tracker.db")
+        engine = init_db("data/study_tracker.db")
         logger.info("Database connection established")
-        return conn
-    except sqlite3.Error as e:
+        return engine
+    except Exception as e:
         logger.error(f"Database connection error: {e}")
         st.error(f"Erro ao conectar ao banco de dados: {e}")
         raise
 
 
-def get_db() -> sqlite3.Connection:
+def get_db() -> Any:
     """
-    Get database connection from session state or create new one.
+    Get database engine from session state or create new one.
 
-    This is the preferred method for getting database connections
+    This is the preferred method for getting data layer connections
     in GayATCU applications. It uses session state caching to avoid
     creating multiple connections per script run.
 
     Returns:
-        sqlite3.Connection: Active database connection
+        Any: Active database engine
     """
     try:
         # Use session state to cache connection within the same script run
@@ -75,18 +77,16 @@ def initialize_database() -> bool:
         bool: True if initialization successful, False otherwise
     """
     try:
-        conn = get_db()
+        engine = get_db()
 
         # Check if database already has data
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM topics")
-        topic_count = cursor.fetchone()[0]
+        with Session(engine) as session:
+            topic_count = session.exec(select(func.count(Topic.id))).first() or 0
 
         if topic_count == 0:
             logger.info("Database empty, importing topics from conteudo.json")
-            from db import import_topics_from_json
 
-            imported = import_topics_from_json(conn)
+            imported = import_topics_from_json(engine)
             logger.info(f"Imported {imported} topics successfully")
             return True
         else:
@@ -114,10 +114,6 @@ def safe_db_operation(operation_func, default_value=None):
     def wrapper(*args, **kwargs):
         try:
             return operation_func(*args, **kwargs)
-        except sqlite3.Error as e:
-            logger.error(f"Database operation error: {e}")
-            st.warning(f"Erro de banco de dados: {e}")
-            return default_value
         except Exception as e:
             logger.error(f"Unexpected error: {e}")
             st.warning(f"Erro inesperado: {e}")

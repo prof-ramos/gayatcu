@@ -1,449 +1,436 @@
 """
 SQLite database layer for study tracker application.
 
-All database operations use parameterized queries with ? placeholders
-to prevent SQL injection. User input is never interpolated directly
-into SQL strings.
+Refactored to use SQLModel ORM.
 """
 
 import json
 import os
-import sqlite3
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+from sqlalchemy import UniqueConstraint, func
+from sqlmodel import Field, Session, SQLModel, create_engine, select
 
-def init_db(db_path: str = "data/study_tracker.db") -> sqlite3.Connection:
+# --- Models ---
+
+
+class Topic(SQLModel, table=True):
+    __tablename__ = "topics"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    codigo: str = Field(index=True)
+    secao: str = Field(index=True)
+    subsecao: str
+    titulo: str
+
+    __table_args__ = (UniqueConstraint("codigo", "secao", "subsecao"),)
+
+
+class Progress(SQLModel, table=True):
+    __tablename__ = "progress"
+    topic_id: int = Field(primary_key=True, foreign_key="topics.id")
+    completed_at: Optional[str] = None
+    last_reviewed_at: Optional[str] = None
+    review_count: int = Field(default=0)
+    next_review_date: Optional[str] = Field(default=None, index=True)
+
+
+class ReviewLog(SQLModel, table=True):
+    __tablename__ = "review_log"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    topic_id: int = Field(foreign_key="topics.id")
+    reviewed_at: str
+    interval_days: int
+
+
+# --- Engine ---
+
+
+def init_db(db_path: str = "data/study_tracker.db") -> Any:
     """
     Initialize the SQLite database with required tables and indexes.
-
-    Creates the database file and directory structure if they don't exist.
-    Sets up all tables with proper constraints and performance indexes.
-
-    Args:
-        db_path: Path to the SQLite database file. Defaults to "data/study_tracker.db"
-
-    Returns:
-        sqlite3.Connection: Active database connection with row factory enabled
-
-    Raises:
-        sqlite3.Error: If database initialization fails
+    Returns the SQLAlchemy engine.
     """
-    # Ensure data directory exists
     db_dir = os.path.dirname(db_path)
     if db_dir:
         os.makedirs(db_dir, exist_ok=True)
 
-    conn = sqlite3.connect(db_path, check_same_thread=False)
-    conn.row_factory = sqlite3.Row  # Enable dict-like access to rows
+    sqlite_url = f"sqlite:///{db_path}"
+    engine = create_engine(sqlite_url, connect_args={"check_same_thread": False})
 
-    cursor = conn.cursor()
-
-    # Create topics table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS topics (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            codigo TEXT NOT NULL,
-            secao TEXT NOT NULL,
-            subsecao TEXT NOT NULL,
-            titulo TEXT NOT NULL,
-            UNIQUE(codigo, secao, subsecao)
-        )
-    """)
-
-    # Create progress table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS progress (
-            topic_id INTEGER PRIMARY KEY,
-            completed_at TIMESTAMP,
-            last_reviewed_at TIMESTAMP,
-            review_count INTEGER DEFAULT 0,
-            next_review_date DATE,
-            FOREIGN KEY (topic_id) REFERENCES topics(id)
-        )
-    """)
-
-    # Create review_log table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS review_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            topic_id INTEGER,
-            reviewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            interval_days INTEGER,
-            FOREIGN KEY (topic_id) REFERENCES topics(id)
-        )
-    """)
-
-    # Create performance indexes
-    cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_next_review ON progress(next_review_date)"
-    )
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_codigo ON topics(codigo)")
-    cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_secao_subsecao ON topics(secao, subsecao)"
-    )
-    cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_topic_id_progress ON progress(topic_id)"
-    )
-
-    conn.commit()
-    return conn
+    SQLModel.metadata.create_all(engine)
+    return engine
 
 
-def import_topics_from_json(
-    conn: sqlite3.Connection, json_path: str = "conteudo.json"
-) -> int:
+def import_topics_from_json(engine: Any, json_path: str = "conteudo.json") -> int:
     """
     Import topics from JSON file into the database.
-
-    The JSON file is expected to be an array of sections, where each section
-    has subsecoes, and each subsecao has topicos with codigo and titulo.
-
-    Uses INSERT OR IGNORE to handle duplicates gracefully.
-
-    Args:
-        conn: Active database connection
-        json_path: Path to the JSON file. Defaults to "conteudo.json"
-
-    Returns:
-        int: Number of topics successfully imported
-
-    Raises:
-        FileNotFoundError: If JSON file doesn't exist
-        json.JSONDecodeError: If JSON file is malformed
-        sqlite3.Error: If database operation fails
     """
     with open(json_path, "r", encoding="utf-8") as f:
         sections = json.load(f)
 
-    cursor = conn.cursor()
     imported_count = 0
 
-    # Iterate over the array of sections
-    for section in sections:
-        secao_titulo = section.get("titulo", "")
+    with Session(engine) as session:
+        for section in sections:
+            secao_titulo = section.get("titulo", "")
+            for subsecao in section.get("subsecoes", []):
+                subsecao_titulo = subsecao.get("titulo", "")
+                for topico in subsecao.get("topicos", []):
+                    codigo = topico.get("codigo", "")
+                    titulo = topico.get("titulo", "")
 
-        # Process each subsection within the section
-        for subsecao in section.get("subsecoes", []):
-            subsecao_titulo = subsecao.get("titulo", "")
+                    statement = select(Topic).where(
+                        Topic.codigo == codigo,
+                        Topic.secao == secao_titulo,
+                        Topic.subsecao == subsecao_titulo,
+                    )
+                    existing = session.exec(statement).first()
 
-            # Process each topic within the subsection
-            for topico in subsecao.get("topicos", []):
-                codigo = topico.get("codigo", "")
-                titulo = topico.get("titulo", "")
+                    if not existing:
+                        new_topic = Topic(
+                            codigo=codigo,
+                            secao=secao_titulo,
+                            subsecao=subsecao_titulo,
+                            titulo=titulo,
+                        )
+                        session.add(new_topic)
+                        imported_count += 1
 
-                # Use parameterized query to prevent SQL injection
-                cursor.execute(
-                    """
-                    INSERT OR IGNORE INTO topics (codigo, secao, subsecao, titulo)
-                    VALUES (?, ?, ?, ?)
-                """,
-                    (codigo, secao_titulo, subsecao_titulo, titulo),
-                )
+        session.commit()
 
-                if cursor.rowcount > 0:
-                    imported_count += 1
-
-    conn.commit()
     return imported_count
 
 
-def mark_topic_complete(conn: sqlite3.Connection, topic_id: int) -> bool:
+def mark_topic_complete(engine: Any, topic_id: int) -> bool:
     """
     Mark a topic as completed with current timestamp.
-
-    Creates a new progress record if one doesn't exist, or updates
-    the existing record's completion timestamp.
-
-    Args:
-        conn: Active database connection
-        topic_id: ID of the topic to mark complete
-
-    Returns:
-        bool: True if successful, False if topic_id doesn't exist
     """
-    cursor = conn.cursor()
     dt_now = datetime.now()
     now_iso = dt_now.isoformat()
     next_review = (dt_now + timedelta(days=1)).strftime("%Y-%m-%d")
 
-    # Check if topic exists
-    cursor.execute("SELECT id FROM topics WHERE id = ?", (topic_id,))
-    if cursor.fetchone() is None:
-        return False
+    with Session(engine) as session:
+        topic = session.get(Topic, topic_id)
+        if not topic:
+            return False
 
-    # Insert or update progress record
-    cursor.execute(
-        """
-        INSERT INTO progress (topic_id, completed_at, next_review_date, last_reviewed_at, review_count)
-        VALUES (?, ?, ?, NULL, 0)
-        ON CONFLICT(topic_id) DO UPDATE SET
-            completed_at = COALESCE(progress.completed_at, excluded.completed_at)
-    """,
-        (topic_id, now_iso, next_review),
-    )
+        progress = session.get(Progress, topic_id)
+        if progress:
+            if not progress.completed_at:
+                progress.completed_at = now_iso
+        else:
+            progress = Progress(
+                topic_id=topic_id,
+                completed_at=now_iso,
+                next_review_date=next_review,
+                review_count=0,
+            )
+            session.add(progress)
 
-    conn.commit()
-    return True
+        session.commit()
+        return True
 
 
-def get_topic_progress(
-    conn: sqlite3.Connection, topic_id: int
-) -> Optional[Dict[str, Any]]:
+def get_topic_progress(engine: Any, topic_id: int) -> Optional[Dict[str, Any]]:
     """
     Get detailed progress information for a specific topic.
-
-    Args:
-        conn: Active database connection
-        topic_id: ID of the topic
-
-    Returns:
-        Dictionary with topic details and progress info, or None if not found
-        Keys include: id, codigo, secao, subsecao, titulo, completed_at,
-                     last_reviewed_at, review_count, next_review_date
     """
-    cursor = conn.cursor()
+    with Session(engine) as session:
+        topic = session.get(Topic, topic_id)
+        if not topic:
+            return None
 
-    cursor.execute(
-        """
-        SELECT
-            t.id, t.codigo, t.secao, t.subsecao, t.titulo,
-            p.completed_at, p.last_reviewed_at, p.review_count, p.next_review_date
-        FROM topics t
-        LEFT JOIN progress p ON t.id = p.topic_id
-        WHERE t.id = ?
-    """,
-        (topic_id,),
-    )
+        progress = session.get(Progress, topic_id)
 
-    row = cursor.fetchone()
-    if row is None:
-        return None
-
-    return {
-        "id": row["id"],
-        "codigo": row["codigo"],
-        "secao": row["secao"],
-        "subsecao": row["subsecao"],
-        "titulo": row["titulo"],
-        "completed_at": row["completed_at"],
-        "last_reviewed_at": row["last_reviewed_at"],
-        "review_count": row["review_count"] or 0,
-        "next_review_date": row["next_review_date"],
-    }
+        return {
+            "id": topic.id,
+            "codigo": topic.codigo,
+            "secao": topic.secao,
+            "subsecao": topic.subsecao,
+            "titulo": topic.titulo,
+            "completed_at": progress.completed_at if progress else None,
+            "last_reviewed_at": progress.last_reviewed_at if progress else None,
+            "review_count": progress.review_count if progress else 0,
+            "next_review_date": progress.next_review_date if progress else None,
+        }
 
 
-def get_all_progress(conn: sqlite3.Connection) -> List[Dict[str, Any]]:
+def get_all_progress(engine: Any) -> List[Dict[str, Any]]:
     """
     Get progress information for all topics in the database.
-
-    Returns topics grouped by section and subsection, including completion
-    status and review information.
-
-    Args:
-        conn: Active database connection
-
-    Returns:
-        List of dictionaries, each representing a topic with its progress
     """
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            t.id, t.codigo, t.secao, t.subsecao, t.titulo,
-            p.completed_at, p.last_reviewed_at, p.review_count, p.next_review_date
-        FROM topics t
-        LEFT JOIN progress p ON t.id = p.topic_id
-        ORDER BY t.secao, t.subsecao, t.codigo
-    """)
-
-    results = []
-    for row in cursor.fetchall():
-        results.append(
-            {
-                "id": row["id"],
-                "codigo": row["codigo"],
-                "secao": row["secao"],
-                "subsecao": row["subsecao"],
-                "titulo": row["titulo"],
-                "completed_at": row["completed_at"],
-                "last_reviewed_at": row["last_reviewed_at"],
-                "review_count": row["review_count"] or 0,
-                "next_review_date": row["next_review_date"],
-            }
+    with Session(engine) as session:
+        statement = (
+            select(Topic, Progress)
+            .join(Progress, isouter=True)
+            .order_by(Topic.secao, Topic.subsecao, Topic.codigo)
         )
+        results = session.exec(statement).all()
 
-    return results
+        output = []
+        for topic, progress in results:
+            output.append(
+                {
+                    "id": topic.id,
+                    "codigo": topic.codigo,
+                    "secao": topic.secao,
+                    "subsecao": topic.subsecao,
+                    "titulo": topic.titulo,
+                    "completed_at": progress.completed_at if progress else None,
+                    "last_reviewed_at": progress.last_reviewed_at if progress else None,
+                    "review_count": progress.review_count if progress else 0,
+                    "next_review_date": progress.next_review_date if progress else None,
+                }
+            )
+        return output
 
 
-def get_topics_due_for_review(
-    conn: sqlite3.Connection, date: str
-) -> List[Dict[str, Any]]:
+def get_topics_due_for_review(engine: Any, date: str) -> List[Dict[str, Any]]:
     """
     Get all topics that are due for review on or before the given date.
-
-    Filters for topics where next_review_date is NULL or <= given date.
-
-    Args:
-        conn: Active database connection
-        date: Date string in YYYY-MM-DD format
-
-    Returns:
-        List of dictionaries with topic and progress information
     """
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        SELECT
-            t.id, t.codigo, t.secao, t.subsecao, t.titulo,
-            p.completed_at, p.last_reviewed_at, p.review_count, p.next_review_date
-        FROM topics t
-        INNER JOIN progress p ON t.id = p.topic_id
-        WHERE p.completed_at IS NOT NULL
-          AND (p.next_review_date IS NULL OR p.next_review_date <= ?)
-        ORDER BY p.next_review_date, t.secao, t.subsecao
-    """,
-        (date,),
-    )
-
-    results = []
-    for row in cursor.fetchall():
-        results.append(
-            {
-                "id": row["id"],
-                "codigo": row["codigo"],
-                "secao": row["secao"],
-                "subsecao": row["subsecao"],
-                "titulo": row["titulo"],
-                "completed_at": row["completed_at"],
-                "last_reviewed_at": row["last_reviewed_at"],
-                "review_count": row["review_count"] or 0,
-                "next_review_date": row["next_review_date"],
-            }
+    with Session(engine) as session:
+        statement = (
+            select(Topic, Progress)
+            .join(Progress)
+            .where(
+                Progress.completed_at.is_not(None),
+                (Progress.next_review_date.is_(None))
+                | (Progress.next_review_date <= date),
+            )
+            .order_by(Progress.next_review_date, Topic.secao, Topic.subsecao)
         )
 
-    return results
+        results = session.exec(statement).all()
+
+        output = []
+        for topic, progress in results:
+            output.append(
+                {
+                    "id": topic.id,
+                    "codigo": topic.codigo,
+                    "secao": topic.secao,
+                    "subsecao": topic.subsecao,
+                    "titulo": topic.titulo,
+                    "completed_at": progress.completed_at,
+                    "last_reviewed_at": progress.last_reviewed_at,
+                    "review_count": progress.review_count,
+                    "next_review_date": progress.next_review_date,
+                }
+            )
+        return output
 
 
-def mark_review_complete(
-    conn: sqlite3.Connection, topic_id: int, interval: int
-) -> bool:
+def mark_review_complete(engine: Any, topic_id: int, interval: int) -> bool:
     """
     Mark a review as complete and schedule the next review date.
-
-    Records the review in the review_log, updates the progress record,
-    and calculates the next review date using the spaced repetition interval.
-
-    Args:
-        conn: Active database connection
-        topic_id: ID of the topic being reviewed
-        interval: Number of days until next review (spaced repetition interval)
-
-    Returns:
-        bool: True if successful, False if topic_id doesn't exist or not completed
     """
-    cursor = conn.cursor()
     now = datetime.now()
 
-    # Check if topic exists and is completed
-    cursor.execute(
-        """
-        SELECT p.completed_at FROM topics t
-        LEFT JOIN progress p ON t.id = p.topic_id
-        WHERE t.id = ?
-    """,
-        (topic_id,),
-    )
+    with Session(engine) as session:
+        progress = session.get(Progress, topic_id)
+        if not progress or not progress.completed_at:
+            return False
 
-    result = cursor.fetchone()
-    if result is None or result["completed_at"] is None:
-        return False
+        next_review = (now + timedelta(days=interval)).strftime("%Y-%m-%d")
+        now_iso = now.isoformat()
 
-    # Calculate next review date
-    next_review = (now + timedelta(days=interval)).strftime("%Y-%m-%d")
-    now_iso = now.isoformat()
+        review_log = ReviewLog(
+            topic_id=topic_id, reviewed_at=now_iso, interval_days=interval
+        )
+        session.add(review_log)
 
-    # Log this review
-    cursor.execute(
-        """
-        INSERT INTO review_log (topic_id, reviewed_at, interval_days)
-        VALUES (?, ?, ?)
-    """,
-        (topic_id, now_iso, interval),
-    )
+        progress.last_reviewed_at = now_iso
+        progress.review_count += 1
+        progress.next_review_date = next_review
 
-    # Update progress record
-    cursor.execute(
-        """
-        UPDATE progress
-        SET last_reviewed_at = ?,
-            review_count = review_count + 1,
-            next_review_date = ?
-        WHERE topic_id = ?
-    """,
-        (now_iso, next_review, topic_id),
-    )
-
-    conn.commit()
-    return True
+        session.add(progress)
+        session.commit()
+        return True
 
 
-def get_statistics(conn: sqlite3.Connection) -> Dict[str, Any]:
+def get_statistics(engine: Any) -> Dict[str, Any]:
     """
     Calculate and return overall study statistics.
-
-    Provides metrics on total topics, completion status, review activity,
-    and upcoming review workload.
-
-    Args:
-        conn: Active database connection
-
-    Returns:
-        Dictionary containing:
-        - total_topics: Total number of topics in database
-        - completed_topics: Number of topics marked as complete
-        - pending_topics: Number of topics not yet started
-        - total_reviews: Total number of reviews completed
-        - due_today: Number of topics due for review today
-        - completion_rate: Percentage of topics completed (0-100)
     """
-    cursor = conn.cursor()
     today = datetime.now().strftime("%Y-%m-%d")
 
-    # Total topics
-    cursor.execute("SELECT COUNT(*) as count FROM topics")
-    total_topics = cursor.fetchone()["count"]
+    with Session(engine) as session:
+        total_topics_result = session.exec(select(func.count(Topic.id))).first()
+        total_topics = total_topics_result if total_topics_result is not None else 0
 
-    # Completed topics
-    cursor.execute(
-        "SELECT COUNT(*) as count FROM progress WHERE completed_at IS NOT NULL"
-    )
-    completed_topics = cursor.fetchone()["count"]
+        completed_topics_result = session.exec(
+            select(func.count(Progress.topic_id)).where(
+                Progress.completed_at.is_not(None)
+            )
+        ).first()
+        completed_topics = (
+            completed_topics_result if completed_topics_result is not None else 0
+        )
 
-    # Total reviews completed
-    cursor.execute("SELECT SUM(review_count) as total FROM progress")
-    total_reviews = cursor.fetchone()["total"] or 0
+        total_reviews_result = session.exec(
+            select(func.sum(Progress.review_count))
+        ).first()
+        total_reviews = total_reviews_result if total_reviews_result is not None else 0
 
-    # Topics due for review today
-    cursor.execute(
-        """
-        SELECT COUNT(*) as count FROM progress
-        WHERE completed_at IS NOT NULL
-          AND (next_review_date IS NULL OR next_review_date <= ?)
-    """,
-        (today,),
-    )
-    due_today = cursor.fetchone()["count"]
+        due_today_result = session.exec(
+            select(func.count(Progress.topic_id)).where(
+                Progress.completed_at.is_not(None),
+                (Progress.next_review_date.is_(None))
+                | (Progress.next_review_date <= today),
+            )
+        ).first()
+        due_today = due_today_result if due_today_result is not None else 0
 
-    # Calculate completion rate
-    completion_rate = (completed_topics / total_topics * 100) if total_topics > 0 else 0
+        completion_rate = (
+            (completed_topics / total_topics * 100) if total_topics > 0 else 0
+        )
 
-    return {
-        "total_topics": total_topics,
-        "completed_topics": completed_topics,
-        "pending_topics": total_topics - completed_topics,
-        "total_reviews": total_reviews,
-        "due_today": due_today,
-        "completion_rate": round(completion_rate, 2),
-    }
+        return {
+            "total_topics": total_topics,
+            "completed_topics": completed_topics,
+            "pending_topics": total_topics - completed_topics,
+            "total_reviews": total_reviews,
+            "due_today": due_today,
+            "completion_rate": round(completion_rate, 2),
+        }
+
+
+def get_detailed_statistics_by_section(engine: Any) -> List[Dict[str, Any]]:
+    """
+    Get detailed statistics grouped by section.
+
+    Returns a list of dicts with section name, total topics, completed topics,
+    and calculated percentage. This query is used in the statistics page.
+    """
+    with Session(engine) as session:
+        statement = (
+            select(
+                Topic.secao,
+                func.count(Topic.id).label("total"),
+                func.sum(
+                    func.case((Progress.completed_at != None, 1), else_=0)
+                ).label("completed"),
+            )
+            .outerjoin(Progress, Topic.id == Progress.topic_id)
+            .group_by(Topic.secao)
+            .order_by(Topic.secao)
+        )
+
+        results = session.exec(statement).all()
+
+        output = []
+        for secao, total, completed in results:
+            completed_val = completed if completed is not None else 0
+            percentage = (completed_val / total * 100.0) if total > 0 else 0.0
+            output.append(
+                {
+                    "secao": secao,
+                    "total": total,
+                    "completed": completed_val,
+                    "percentage": round(percentage, 1),
+                    "pending": total - completed_val,
+                }
+            )
+
+        return output
+
+
+def get_weekly_review_data(engine: Any, weeks: int = 12) -> List[Dict[str, Any]]:
+    """
+    Get review counts per week for the last N weeks.
+
+    Args:
+        engine: Database engine
+        weeks: Number of weeks to look back (default: 12)
+
+    Returns:
+        List of dicts with 'week' (date) and 'count' (number of reviews)
+    """
+    days_back = weeks * 7
+
+    with Session(engine) as session:
+        # Calculate the date N weeks ago
+        from datetime import timedelta
+        cutoff_date = datetime.now() - timedelta(days=days_back)
+
+        statement = (
+            select(
+                func.date(ReviewLog.reviewed_at).label("review_date"),
+                func.count(ReviewLog.id).label("count"),
+            )
+            .where(ReviewLog.reviewed_at >= cutoff_date)
+            .group_by(func.date(ReviewLog.reviewed_at))
+            .order_by(func.date(ReviewLog.reviewed_at))
+        )
+
+        results = session.exec(statement).all()
+
+        output = [{"review_date": str(row[0]), "count": row[1]} for row in results]
+
+        return output
+
+
+def get_topic_distribution_by_section(engine: Any) -> List[Dict[str, Any]]:
+    """
+    Get topic distribution by section.
+
+    Returns a list of dicts with section name and total topic count.
+    Used for pie chart visualization.
+    """
+    with Session(engine) as session:
+        statement = (
+            select(Topic.secao, func.count(Topic.id).label("total"))
+            .group_by(Topic.secao)
+            .order_by(func.count(Topic.id).desc())
+        )
+
+        results = session.exec(statement).all()
+
+        output = [{"secao": row[0], "total": row[1]} for row in results]
+
+        return output
+
+
+def export_all_progress_to_dict(engine: Any) -> List[Dict[str, Any]]:
+    """
+    Export all progress data as a list of dicts for CSV export.
+
+    Returns comprehensive progress data including topics, completion dates,
+    review counts, and next review dates.
+    """
+    with Session(engine) as session:
+        statement = (
+            select(
+                Topic.codigo,
+                Topic.secao,
+                Topic.subsecao,
+                Topic.titulo,
+                Progress.completed_at,
+                Progress.last_reviewed_at,
+                Progress.review_count,
+                Progress.next_review_date,
+            )
+            .outerjoin(Progress, Topic.id == Progress.topic_id)
+            .order_by(Topic.secao, Topic.subsecao, Topic.codigo)
+        )
+
+        results = session.exec(statement).all()
+
+        output = [
+            {
+                "codigo": row[0],
+                "secao": row[1],
+                "subsecao": row[2],
+                "titulo": row[3],
+                "completed_at": row[4],
+                "last_reviewed_at": row[5],
+                "review_count": row[6] if row[6] else 0,
+                "next_review_date": row[7],
+            }
+            for row in results
+        ]
+
+        return output
+
