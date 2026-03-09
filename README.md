@@ -5,7 +5,7 @@ Dashboard profissional para acompanhamento de estudos do concurso TCU 2021 com s
 ## 🎯 Funcionalidades
 
 - **Dashboard Principal**: Métricas em tempo real do progresso
-- **Checklist Interativo**: Marque 345 tópicos como estudados
+- **Checklist Interativo**: Marque 344 tópicos como estudados
 - **Sistema de Revisões**: Repetição espaçada automática (24h → 7d → 15d → 30d)
 - **Estatísticas**: Gráficos interativos e exportação de dados
 - **Tema Dark**: Interface profissional e confortável
@@ -17,7 +17,7 @@ Dashboard profissional para acompanhamento de estudos do concurso TCU 2021 com s
 ```bash
 # Navegue até o diretório onde o projeto foi clonado
 cd <seu-diretorio-de-clone>
-streamlit run app.py
+uv run streamlit run app.py
 ```
 
 O dashboard abrirá automaticamente em: http://localhost:8501
@@ -56,22 +56,47 @@ O dashboard abrirá automaticamente em: http://localhost:8501
 
 ## 📊 Estrutura dos Dados
 
-- **345 tópicos** organizados em 17 disciplinas
+- **344 tópicos** organizados em 17 disciplinas
 - **2 seções principais**: Conhecimentos Gerais e Específicos
 - **Sistema SRS**: Revisões agendadas automaticamente
 
 ## 🔧 Tecnologias
 
-- **Streamlit 1.28+**: Framework web
+- **Streamlit 1.55+**: Framework web
+- **SQLModel**: ORM (SQLAlchemy + Pydantic)
 - **SQLite**: Banco de dados
 - **Plotly**: Gráficos interativos
-- **Python 3.10+**: Linguagem (testado com 3.13)
+- **Pandas**: Manipulação de dados
+- **Python 3.11+**: Linguagem (downgraded for Streamlit Cloud compatibility)
 
 ## 📦 Instalação
 
 ```bash
-# Certifique-se de estar no diretório do projeto clonado
-pip install -r requirements.txt
+# Instale as dependências com uv
+uv sync
+```
+
+## 🧪 Testes
+
+```bash
+# Rodar todos os testes
+uv run pytest tests/ -v
+
+# Rodar apenas testes do banco de dados
+uv run pytest tests/test_db.py -v
+
+# Rodar apenas testes de utilitários
+uv run pytest tests/test_utils.py -v
+```
+
+## 🔍 Qualidade de Código
+
+```bash
+# Verificar lint
+uv run ruff check .
+
+# Formatar código
+uv run ruff format .
 ```
 
 ## 🎓 Sistema de Repetição Espaçada
@@ -110,49 +135,41 @@ copy data\study_tracker.db data\study_tracker_backup_manual.db
 
 Ou use a exportação na página de Estatísticas.
 
-## 🚀 Deploy na Nuvem
+## 🚀 Deploy para Streamlit Community Cloud
 
-Quer acessar seu dashboard de qualquer lugar? Faça o deploy no Streamlit Community Cloud!
+Este aplicativo está preparado para deploy na Streamlit Community Cloud.
 
 ### Deploy Rápido
 
-1. **Prepare o repositório**
-   ```bash
-   git add .
-   git commit -m "feat: preparar para deploy"
-   git push origin main
-   ```
+```bash
+# 1. Prepare o repositório
+git add requirements.txt .streamlit/config.toml monitoring.py DEPLOYMENT.md
+git commit -m "chore: prepare for Streamlit Cloud deploy"
+git push origin main
 
-2. **Acesse Streamlit Cloud**
-   - Vá para [https://share.streamlit.io](https://share.streamlit.io)
-   - Clique em "New app"
-   - Selecione seu repositório `gayatcu`
-   - Deploy automatico! 🎉
+# 2. Acesse share.streamlit.io e faça o deploy
+# - Selecione seu repositório GitHub
+# - Main file path: app.py
+# - Python version: 3.11
+```
 
 ### Documentação Completa
 
-📖 **[Guia Detalhado de Deploy](DEPLOYMENT.md)**
+Para instruções detalhadas de deployment, consulte **[DEPLOYMENT.md](DEPLOYMENT.md)**.
 
-O guia completo inclui:
-- ✅ Passo a passo detalhado
-- 🔧 Configuração do GitHub
-- 📊 Monitoramento e logs
-- 🛠️ Troubleshooting de erros
-- 💡 Boas práticas e otimização
+### ⚠️ Limitação Importante: Persistência de Dados
 
-### Vantagens do Deploy
+**O banco de dados SQLite NÃO persiste entre deploys na Streamlit Community Cloud.**
 
-- 🌐 Acesso de qualquer dispositivo
-- 📱 Interface mobile-friendly
-- 🔄 Atualizações automáticas
-- 📈 Métricas de uso
-- 💾 Dados persistentes (com configuração adequada)
+- Seus dados de progresso serão **resetados** a cada novo deploy
+- **Solução**: Exporte seus dados regularmente via página "📊 Estatísticas" → "💾 Exportar"
+- **Recomendação**: Para produção, considere migrar para PostgreSQL
 
-### Links Úteis
+Veja detalhes completos em [DEPLOYMENT.md](DEPLOYMENT.md#-critical-sqlite-data-does-not-persist-between-deploys).
 
-- [Streamlit Community Cloud](https://streamlit.io/cloud)
-- [Documentação Oficial](https://docs.streamlit.io)
-- [Exemplos de Apps](https://streamlit.io/gallery)
+### Deploy URL
+
+🔗 **[gayatcu.streamlit.app](https://gayatcu.streamlit.app)** *(placeholder - atualize após o primeiro deploy)*
 
 ---
 

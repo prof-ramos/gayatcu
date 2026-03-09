@@ -6,9 +6,9 @@ following Streamlit best practices.
 """
 
 import logging
-import psutil
 import os
 
+import psutil
 import streamlit as st
 from sqlalchemy import Engine, func
 from sqlalchemy.exc import SQLAlchemyError
@@ -205,3 +205,14 @@ class SessionStateManager:
         key = f"{SessionStateManager.CONFIRM_PREFIX}{topic_id}"
         if key in st.session_state:
             del st.session_state[key]
+
+    @staticmethod
+    def perform_cleanup():
+        """
+        Perform cache cleanup to prevent memory leaks.
+
+        This is a convenience method that calls the monitoring.cleanup_session_state()
+        function. It can be called from SessionStateManager for consistency.
+        """
+        from monitoring import cleanup_session_state
+        cleanup_session_state()

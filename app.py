@@ -1,11 +1,12 @@
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
 
 import streamlit as st
 from sqlalchemy.exc import SQLAlchemyError
 
 from components import create_donut_chart, create_progress_bar_chart
 from db import get_statistics
+from monitoring import cleanup_session_state, monitor_memory_usage
 from session import get_db, initialize_database
 from utils import get_completion_percentage, get_section_progress
 
@@ -79,7 +80,7 @@ def display_progress_overview(
 
     with col4:
         # Calculate estimated weeks to completion (assuming 5 topics per week)
-        weeks_remaining = max(1, (pending_topics // 5) + 1)
+        weeks_remaining = -(-pending_topics // 5) if pending_topics > 0 else 0
         completion_date = datetime.now() + timedelta(weeks=weeks_remaining)
         st.metric(
             label="📅 Previsão de Conclusão",
@@ -156,10 +157,10 @@ def display_motivational_message(completion_pct: float):
         submessage = "Continue firme, falta pouco para conquistar seu objetivo!"
     elif completion_pct >= 50:
         message = "💪 Ótimo progresso!"
-        submessage = "Você já cobrou metade do caminho. Continue assim!"
+        submessage = "Você já cobriu metade do caminho. Continue assim!"
     elif completion_pct >= 25:
         message = "📈 Bom começo!"
-        submessage = "Você está construindo uma base sólide. Mantenha o ritmo!"
+        submessage = "Você está construindo uma base sólida. Mantenha o ritmo!"
     elif completion_pct > 0:
         message = "🚀 Primeiros passos!"
         submessage = "Toda jornada começa com um primeiro passo. Continue estudando!"
@@ -196,6 +197,12 @@ def main():
         # Initialize database and import data if needed
         initialize_database()
 
+        # Monitor memory usage (displays in sidebar)
+        monitor_memory_usage()
+
+        # Clean up unused cache entries to prevent memory leaks
+        cleanup_session_state()
+
         # Get database connection
         db = get_db()
 
@@ -204,11 +211,9 @@ def main():
             stats = get_statistics(db)
             total_topics = stats.get("total_topics", 0)
             completed_topics = stats.get("completed_topics", 0)
-            total_reviews = stats.get("total_reviews", 0)
         except (SQLAlchemyError, ValueError):
             total_topics = 0
             completed_topics = 0
-            total_reviews = 0
 
         try:
             completion_pct = get_completion_percentage(db)
@@ -297,7 +302,9 @@ def main():
 
     except Exception as e:
         st.error(f"Erro ao carregar aplicação: {str(e)}")
-        st.info("Por favor, recarregue a página. Se o problema persistir, contacte o suporte.")
+        st.info(
+            "Por favor, recarregue a página. Se o problema persistir, contacte o suporte."
+        )
         logger.error(f"Application error: {str(e)}", exc_info=True)
 
 

@@ -1,68 +1,52 @@
-# Python 3.10-3.12 required for Streamlit Cloud
-
-# Core dependencies
-streamlit==1.55.0
-plotly==6.6.0
-sqlmodel==0.0.37
+# GayATCU - Requires Python 3.11+
+# Auto-generated from pyproject.toml using: uv pip freeze
+# Note: Using streamlit==1.55.0 (newer than spec's 1.40.0 - no breaking changes for used features)
+altair==6.0.0
+annotated-types==0.7.0
+attrs==25.4.0
+blinker==1.9.0
+cachetools==7.0.4
+certifi==2026.2.25
+charset-normalizer==3.4.5
+click==8.3.1
+gitdb==4.0.12
+gitpython==3.1.46
+idna==3.11
+iniconfig==2.3.0
+jinja2==3.1.6
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+markupsafe==3.0.3
+narwhals==2.17.0
+numpy==2.4.2
+packaging==26.0
 pandas==2.3.3
-
-# Streamlit dependencies
-altair!=5.4.0,!=5.4.1,<7,>=4.0
-blinker<2,>=1.5.0
-cachetools<8,>=5.5
-click<9,>=7.0
-gitpython!=3.1.19,<4,>=3.0.7
-numpy<3,>=1.23
-packaging>=20
-pillow<13,>=7.1.0
-pydeck<1,>=0.8.0b4
-protobuf<7,>=3.20
-pyarrow>=7.0
-requests<3,>=2.27
-tenacity<10,>=8.1.0
-toml<2,>=0.10.1
-tornado!=6.5.0,<7,>=6.0.3
-typing-extensions<5,>=4.10.0
-
-# Pandas dependencies
-python-dateutil>=2.8.2
-pytz>=2020.1
-tzdata>=2022.7
-
-# Plotly dependencies
-narwhals>=1.15.1
-
-# SQLModel dependencies
-SQLAlchemy<2.1.0,>=2.0.14
-pydantic>=2.11.0
-
-# Altair dependencies
-jinja2
-jsonschema>=3.0
-
-# GitPython dependencies
-gitdb<5,>=4.0.1
-smmap<6,>=3.0.1
-
-# Requests dependencies
-charset-normalizer<4,>=2
-idna<4,>=2.5
-urllib3<3,>=1.21.1
-certifi>=2017.4.17
-
-# Jinja2 dependencies
-MarkupSafe>=2.0
-
-# JSONSchema dependencies
-attrs>=22.2.0
-jsonschema-specifications>=2023.03.6
-referencing>=0.28.4
-rpds-py>=0.25.0
-
-# Pydantic dependencies
-annotated-types>=0.6.0
+pillow==12.1.1
+plotly==6.6.0
+pluggy==1.6.0
+protobuf==6.33.5
+psutil==7.2.2
+pyarrow==23.0.1
+pydantic==2.12.5
 pydantic-core==2.41.5
-typing-inspection>=0.4.2
-
-# python-dateutil dependencies
-six>=1.5
+pydeck==0.9.1
+pygments==2.19.2
+pytest==9.0.2
+python-dateutil==2.9.0.post0
+pytz==2026.1.post1
+referencing==0.37.0
+requests==2.32.5
+rpds-py==0.30.0
+ruff==0.15.5
+six==1.17.0
+smmap==5.0.2
+sqlalchemy==2.0.48
+sqlmodel==0.0.37
+streamlit==1.55.0
+tenacity==9.1.4
+toml==0.10.2
+tornado==6.5.4
+typing-extensions==4.15.0
+typing-inspection==0.4.2
+tzdata==2025.3
+urllib3==2.6.3
