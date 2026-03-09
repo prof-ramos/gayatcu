@@ -14,7 +14,7 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from urllib.request import Request, urlopen
 
 import streamlit as st
-from sqlalchemy import Engine, UniqueConstraint, case, func, inspect
+from sqlalchemy import Engine, UniqueConstraint, case, func, inspect, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
@@ -32,6 +32,11 @@ _DB_URL_ENV_KEYS = (
 )
 _UNSUPPORTED_DB_QUERY_PARAMS = {"pgbouncer", "supa"}
 _REQUIRED_TABLES = {"topics", "progress", "review_log"}
+_BOOTSTRAP_INDEX_NAMES = (
+    "ix_topics_codigo",
+    "ix_topics_secao",
+    "ix_progress_next_review_date",
+)
 
 # --- Models ---
 
@@ -178,10 +183,19 @@ def init_db(db_path: str | None = None) -> Engine:
         SQLModel.metadata.create_all(engine)
     except SQLAlchemyError as exc:
         message = str(exc).lower()
-        if "already exists" in message and "ix_topics_" in message:
+        if (
+            db_url.startswith("postgresql+psycopg://")
+            and "already exists" in message
+            and ("ix_topics_" in message or "ix_progress_" in message)
+        ):
             logger.warning(
-                "Schema já existente detectado durante bootstrap; seguindo startup."
+                "Conflito de índice detectado no bootstrap do Postgres; "
+                "executando reparo automático."
             )
+            with engine.begin() as conn:
+                for index_name in _BOOTSTRAP_INDEX_NAMES:
+                    conn.execute(text(f'DROP INDEX IF EXISTS "{index_name}"'))
+            SQLModel.metadata.create_all(engine)
         else:
             raise
 
