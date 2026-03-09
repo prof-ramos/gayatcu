@@ -8,20 +8,23 @@ This guide covers deploying the GayATCU (TCU study tracker with Spaced Repetitio
 
 - **GitHub repository** with your code
 - **Streamlit Community Cloud account** (free at share.streamlit.io)
-- **Python 3.11+** required (downgraded from 3.13 for cloud compatibility)
-- **requirements.txt** in repository root
+- **Python 3.11+** (Community Cloud usa 3.12 por padrão)
+- **pyproject.toml + uv.lock** no root do repositório (estratégia única de dependências)
 
 ## Deploy Steps
 
 ### 1. Prepare Repository
 
 ```bash
-# Verify dependencies are exported
-cat requirements.txt
+# Verify dependency manager files (uv)
+ls pyproject.toml uv.lock
+
+# Verify lockfile is in sync
+uv lock --check
 
 # Verify Python version
 grep "requires-python" pyproject.toml
-# Should show: requires-python = ">=3.11"
+# Should show: requires-python = ">=3.11" (or higher)
 
 # Verify config file
 cat .streamlit/config.toml
@@ -30,7 +33,7 @@ cat .streamlit/config.toml
 ### 2. Push to GitHub
 
 ```bash
-git add requirements.txt .streamlit/config.toml monitoring.py DEPLOYMENT.md
+git add pyproject.toml uv.lock .streamlit/config.toml monitoring.py DEPLOYMENT.md README.md
 git commit -m "chore: prepare for Streamlit Cloud deploy"
 git push origin main
 ```
@@ -42,7 +45,7 @@ git push origin main
 3. Select your GitHub repository
 4. Configure deployment:
    - **Main file path**: `app.py`
-   - **Python version**: 3.11 (if available, otherwise 3.12)
+   - **Python version**: 3.12 (default) ou outra versão suportada em **Advanced settings**
 5. Click **"Deploy"**
 
 ## ⚠️ CRITICAL: SQLite Data Does NOT Persist Between Deploys
@@ -85,15 +88,13 @@ See "Data Persistence Limitations" section below for details.
 
 **Diagnosis**:
 ```bash
-python -m venv test_env
-source test_env/bin/activate
-pip install -r requirements.txt
-python -c "import streamlit, pandas, plotly, sqlmodel; print('OK')"
+uv sync
+uv run python -c "import streamlit, pandas, plotly, sqlmodel; print('OK')"
 ```
 
 ## Success Criteria
 
-- [x] requirements.txt created with all dependencies
+- [x] pyproject.toml and uv.lock present and synchronized
 - [x] .streamlit/config.toml configured for cloud
 - [x] monitoring.py module created with psutil fallback
 - [x] DEPLOYMENT.md documentation complete

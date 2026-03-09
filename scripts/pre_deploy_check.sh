@@ -1,48 +1,73 @@
 #!/bin/bash
 
 # Pre-deployment validation script
-# Checks Python version, requirements.txt syntax, and config.toml
+# Checks uv lock workflow, Python version, and Streamlit config.
 
-set -e
+set -euo pipefail
 
 ERRORS=0
 
 echo "=== Pre-deployment Validation ==="
 echo ""
 
-# Check Python version
-echo "Checking Python version..."
-PYTHON_VERSION=$(python3 --version 2>&1 | awk '{print $2}')
-PYTHON_MAJOR=$(echo $PYTHON_VERSION | cut -d. -f1)
-PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d. -f2)
-
-if [ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -ge 10 ] && [ "$PYTHON_MINOR" -le 12 ]; then
-    echo "✓ Python version: $PYTHON_VERSION (valid)"
+# Check uv exists
+echo "Checking uv..."
+if ! command -v uv >/dev/null 2>&1; then
+    echo "✗ uv not found in PATH"
+    ERRORS=$((ERRORS + 1))
 else
-    echo "✗ Python version: $PYTHON_VERSION (invalid - requires 3.10-3.12)"
+    echo "✓ uv available"
+fi
+echo ""
+
+# Check dependency manager files
+echo "Checking pyproject.toml and uv.lock..."
+if [ ! -f "pyproject.toml" ]; then
+    echo "✗ pyproject.toml not found"
+    ERRORS=$((ERRORS + 1))
+else
+    echo "✓ pyproject.toml exists"
+fi
+
+if [ ! -f "uv.lock" ]; then
+    echo "✗ uv.lock not found"
+    ERRORS=$((ERRORS + 1))
+else
+    echo "✓ uv.lock exists"
+fi
+echo ""
+
+# Check lockfile synchronization
+echo "Checking lockfile synchronization..."
+if uv lock --check >/dev/null 2>&1; then
+    echo "✓ uv.lock is synchronized with pyproject.toml"
+else
+    echo "✗ uv.lock is out of date (run: uv lock)"
     ERRORS=$((ERRORS + 1))
 fi
 echo ""
 
-# Check requirements.txt exists and is valid
-echo "Checking requirements.txt..."
-if [ ! -f "requirements.txt" ]; then
-    echo "✗ requirements.txt not found"
-    ERRORS=$((ERRORS + 1))
-else
-    echo "✓ requirements.txt exists"
+# Check Python version
+echo "Checking Python version..."
+PYTHON_VERSION=$(uv run python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}')" 2>/dev/null || true)
+PYTHON_MAJOR=$(echo $PYTHON_VERSION | cut -d. -f1)
+PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d. -f2)
 
-    # Check for syntax errors by trying to parse it
-    if python3 -c "import sys; sys.exit(0)" 2>/dev/null; then
-        # Basic syntax check - no comments-only lines starting with package names
-        if grep -E '^[a-zA-Z].*#' requirements.txt > /dev/null 2>&1; then
-            echo "  ⚠ Warning: Possible inline comments without space"
-        fi
-        echo "✓ requirements.txt syntax appears valid"
-    else
-        echo "✗ Cannot validate requirements.txt syntax"
-        ERRORS=$((ERRORS + 1))
-    fi
+if [ -n "${PYTHON_VERSION}" ] && [ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -ge 11 ]; then
+    echo "✓ Python version: $PYTHON_VERSION (valid)"
+else
+    echo "✗ Python version: ${PYTHON_VERSION:-unknown} (invalid - requires 3.11+)"
+    ERRORS=$((ERRORS + 1))
+fi
+echo ""
+
+# Check dependency imports in uv environment
+echo "Checking import of core dependencies..."
+if uv run python -c "import streamlit, pandas, plotly, sqlmodel, psutil" >/dev/null 2>&1; then
+    echo "✓ Core dependencies import successfully"
+else
+    echo "✗ Failed to import one or more core dependencies in uv environment"
+    ERRORS=$((ERRORS + 1))
 fi
 echo ""
 
@@ -54,25 +79,12 @@ if [ ! -f ".streamlit/config.toml" ]; then
 else
     echo "✓ .streamlit/config.toml exists"
 
-    # Try to parse TOML (requires python3 and tomli or similar)
-    if python3 -c "import tomli; tomli.load(open('.streamlit/config.toml', 'rb'))" 2>/dev/null; then
+    # Parse TOML using stdlib (Python 3.11+)
+    if uv run python -c "import tomllib; tomllib.load(open('.streamlit/config.toml', 'rb'))" 2>/dev/null; then
         echo "✓ config.toml is valid TOML"
-    elif python3 -c "
-import sys
-try:
-    with open('.streamlit/config.toml', 'r') as f:
-        content = f.read()
-        # Basic TOML validation
-        if content.strip().startswith('[') or content.strip() == '':
-            print('Basic TOML structure check passed')
-        else:
-            sys.exit(1)
-except Exception as e:
-    sys.exit(1)
-" 2>/dev/null; then
-        echo "✓ config.toml basic structure valid"
     else
-        echo "⚠ Warning: Cannot fully validate TOML (install tomli for full validation)"
+        echo "✗ config.toml is invalid TOML"
+        ERRORS=$((ERRORS + 1))
     fi
 fi
 echo ""

@@ -11,7 +11,6 @@ showErrorDetails = false
 toolbarMode = "minimal"
 
 [server]
-runOnSave = true
 maxUploadSize = 200
 maxMessageSize = 200
 headless = true
@@ -19,11 +18,5 @@ headless = true
 [logger]
 level = "info"
 
-[browser]
-gatherUsageStats = false
-serverAddress = "localhost"
-serverPort = 8501
-
 [runner]
-fastReruns = false
 magicEnabled = false

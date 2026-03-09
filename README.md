@@ -67,7 +67,7 @@ O dashboard abrirá automaticamente em: http://localhost:8501
 - **SQLite**: Banco de dados
 - **Plotly**: Gráficos interativos
 - **Pandas**: Manipulação de dados
-- **Python 3.11+**: Linguagem (downgraded for Streamlit Cloud compatibility)
+- **Python 3.11+**: Linguagem (Community Cloud usa 3.12 por padrão)
 
 ## 📦 Instalação
 
@@ -143,14 +143,14 @@ Este aplicativo está preparado para deploy na Streamlit Community Cloud.
 
 ```bash
 # 1. Prepare o repositório
-git add requirements.txt .streamlit/config.toml monitoring.py DEPLOYMENT.md
+git add pyproject.toml uv.lock .streamlit/config.toml monitoring.py DEPLOYMENT.md README.md
 git commit -m "chore: prepare for Streamlit Cloud deploy"
 git push origin main
 
 # 2. Acesse share.streamlit.io e faça o deploy
 # - Selecione seu repositório GitHub
 # - Main file path: app.py
-# - Python version: 3.11
+# - Python version: 3.12 (default) ou ajuste em Advanced settings
 ```
 
 ### Documentação Completa
