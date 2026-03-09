@@ -167,6 +167,22 @@ class TestGetAllProgress:
             assert isinstance(item, dict)
             assert required_fields.issubset(item.keys())
 
+    def test_get_all_progress_real_dataset_not_truncated(self, populated_engine):
+        """No dataset real, retorno padrão não pode truncar em 100."""
+        get_all_progress.clear()
+        result = get_all_progress(populated_engine)
+        assert isinstance(result, list)
+        assert len(result) > 300
+
+    def test_get_all_progress_pagination(self, engine, sample_json):
+        """Quando paginado, deve retornar dict com data + total."""
+        import_topics_from_json(engine, sample_json)
+        get_all_progress.clear()
+        result = get_all_progress(engine, offset=0, limit=2)
+        assert isinstance(result, dict)
+        assert result["total"] == 3
+        assert len(result["data"]) == 2
+
 
 class TestReviews:
     """Testes para sistema de revisões (SRS)."""

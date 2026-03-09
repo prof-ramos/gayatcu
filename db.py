@@ -7,7 +7,7 @@ Refactored to use SQLModel ORM.
 import json
 import os
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import streamlit as st
 from sqlalchemy import Engine, UniqueConstraint, case, func
@@ -18,7 +18,7 @@ from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 class Topic(SQLModel, table=True):
     __tablename__ = "topics"
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     codigo: str = Field(index=True)
     secao: str = Field(index=True)
     subsecao: str
@@ -30,15 +30,15 @@ class Topic(SQLModel, table=True):
 class Progress(SQLModel, table=True):
     __tablename__ = "progress"
     topic_id: int = Field(primary_key=True, foreign_key="topics.id")
-    completed_at: Optional[str] = None
-    last_reviewed_at: Optional[str] = None
+    completed_at: str | None = None
+    last_reviewed_at: str | None = None
     review_count: int = Field(default=0)
-    next_review_date: Optional[str] = Field(default=None, index=True)
+    next_review_date: str | None = Field(default=None, index=True)
 
 
 class ReviewLog(SQLModel, table=True):
     __tablename__ = "review_log"
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     topic_id: int = Field(foreign_key="topics.id")
     reviewed_at: str
     interval_days: int
@@ -67,7 +67,7 @@ def import_topics_from_json(engine: Engine, json_path: str = "conteudo.json") ->
     """
     Import topics from JSON file into the database.
     """
-    with open(json_path, "r", encoding="utf-8") as f:
+    with open(json_path, encoding="utf-8") as f:
         sections = json.load(f)
 
     imported_count = 0
@@ -133,7 +133,7 @@ def mark_topic_complete(engine: Engine, topic_id: int) -> bool:
         return True
 
 
-def get_topic_progress(engine: Engine, topic_id: int) -> Optional[Dict[str, Any]]:
+def get_topic_progress(engine: Engine, topic_id: int) -> dict[str, Any] | None:
     """
     Get detailed progress information for a specific topic.
     """
@@ -161,18 +161,20 @@ def get_topic_progress(engine: Engine, topic_id: int) -> Optional[Dict[str, Any]
     ttl=60, max_entries=100
 )  # Cache por 1 minuto, max 100 entries para otimizar memória
 def get_all_progress(
-    _engine: Engine, offset: int = 0, limit: int = 100
-) -> Dict[str, Any]:
+    _engine: Engine, offset: int = 0, limit: int | None = None
+) -> list[dict[str, Any]] | dict[str, Any]:
     """
     Get progress information for all topics with pagination.
 
     Args:
         _engine: Database engine
         offset: Number of records to skip (default: 0)
-        limit: Maximum number of records to return (default: 100)
+        limit: Maximum number of records to return (None = sem limite)
 
     Returns:
-        Dict with 'data' (list of progress dicts) and 'total' (total count)
+        Lista completa de progresso por padrão.
+        Quando paginação for solicitada (`offset > 0` ou `limit` definido),
+        retorna dict com 'data' e 'total'.
     """
     with Session(_engine) as session:
         # Get total count
@@ -185,8 +187,9 @@ def get_all_progress(
             .join(Progress, isouter=True)
             .order_by(Topic.secao, Topic.subsecao, Topic.codigo)
             .offset(offset)
-            .limit(limit)
         )
+        if limit is not None:
+            statement = statement.limit(limit)
         results = session.exec(statement).all()
 
         output = []
@@ -205,14 +208,14 @@ def get_all_progress(
                 }
             )
 
-        # Return dict for pagination (new API)
-        if offset > 0 or limit != 100:
+        # Return dict when pagination is explicitly requested
+        if offset > 0 or limit is not None:
             return {"data": output, "total": total_count or 0}
-        # Return list directly for backward compatibility (old API)
+        # Return full list by default for app compatibility
         return output
 
 
-def get_topics_due_for_review(engine: Engine, date: str) -> List[Dict[str, Any]]:
+def get_topics_due_for_review(engine: Engine, date: str) -> list[dict[str, Any]]:
     """
     Get all topics that are due for review on or before the given date.
     """
@@ -276,7 +279,7 @@ def mark_review_complete(engine: Engine, topic_id: int, interval: int) -> bool:
         return True
 
 
-def get_statistics(engine: Engine) -> Dict[str, Any]:
+def get_statistics(engine: Engine) -> dict[str, Any]:
     """
     Calculate and return overall study statistics.
     """
@@ -323,7 +326,7 @@ def get_statistics(engine: Engine) -> Dict[str, Any]:
         }
 
 
-def get_detailed_statistics_by_section(engine: Engine) -> List[Dict[str, Any]]:
+def get_detailed_statistics_by_section(engine: Engine) -> list[dict[str, Any]]:
     """
     Get detailed statistics grouped by section.
 
@@ -363,7 +366,7 @@ def get_detailed_statistics_by_section(engine: Engine) -> List[Dict[str, Any]]:
         return output
 
 
-def get_weekly_review_data(engine: Engine, weeks: int = 12) -> List[Dict[str, Any]]:
+def get_weekly_review_data(engine: Engine, weeks: int = 12) -> list[dict[str, Any]]:
     """
     Get review counts per week for the last N weeks.
 
@@ -396,7 +399,7 @@ def get_weekly_review_data(engine: Engine, weeks: int = 12) -> List[Dict[str, An
         return output
 
 
-def get_topic_distribution_by_section(engine: Engine) -> List[Dict[str, Any]]:
+def get_topic_distribution_by_section(engine: Engine) -> list[dict[str, Any]]:
     """
     Get topic distribution by section.
 
@@ -417,7 +420,7 @@ def get_topic_distribution_by_section(engine: Engine) -> List[Dict[str, Any]]:
         return output
 
 
-def export_all_progress_to_dict(engine: Engine) -> List[Dict[str, Any]]:
+def export_all_progress_to_dict(engine: Engine) -> list[dict[str, Any]]:
     """
     Export all progress data as a list of dicts for CSV export.
 
@@ -476,12 +479,15 @@ def unmark_topic_complete(engine: Engine, topic_id: int) -> bool:
             return False
 
         progress.completed_at = None
+        progress.review_count = 0
+        progress.last_reviewed_at = None
+        progress.next_review_date = None
         session.add(progress)
         session.commit()
         return True
 
 
-def get_upcoming_reviews(engine: Engine, days: int = 30) -> List[Dict[str, Any]]:
+def get_upcoming_reviews(engine: Engine, days: int = 30) -> list[dict[str, Any]]:
     """
     Get topics scheduled for review in the next N days.
 
