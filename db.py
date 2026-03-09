@@ -24,7 +24,10 @@ class Topic(SQLModel, table=True):
     subsecao: str
     titulo: str
 
-    __table_args__ = (UniqueConstraint("codigo", "secao", "subsecao"),)
+    __table_args__ = (
+        UniqueConstraint("codigo", "secao", "subsecao"),
+        {"extend_existing": True},
+    )
 
 
 class Progress(SQLModel, table=True):
@@ -34,6 +37,7 @@ class Progress(SQLModel, table=True):
     last_reviewed_at: str | None = None
     review_count: int = Field(default=0)
     next_review_date: str | None = Field(default=None, index=True)
+    __table_args__ = {"extend_existing": True}
 
 
 class ReviewLog(SQLModel, table=True):
@@ -42,6 +46,7 @@ class ReviewLog(SQLModel, table=True):
     topic_id: int = Field(foreign_key="topics.id")
     reviewed_at: str
     interval_days: int
+    __table_args__ = {"extend_existing": True}
 
 
 # --- Engine ---
