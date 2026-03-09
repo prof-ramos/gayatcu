@@ -1,0 +1,2512 @@
+[
+  {
+    "titulo": "CONHECIMENTOS GERAIS",
+    "subsecoes": [
+      {
+        "titulo": "LÍNGUA PORTUGUESA",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Interpretação de texto: decodificação dos diversos tipos de mensagem.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Compreensão de texto: observação dos processos que constroem os significados textuais.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "A linguagem e a lógica.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "As estruturas linguísticas no processo de construção de mensagens adequadas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "A pragmática na linguagem: o significado contextual.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6",
+            "titulo": "A semântica vocabular: antônimos, sinônimos, homônimos, parônimos e heterônimos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7",
+            "titulo": "Os modos de organização discursiva: a descrição, a narração, a exposição informativa e a exposição argumentativa.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8",
+            "titulo": "A organização das frases nas situações comunicativas: a colaboração e a relevância; os atos de fala.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9",
+            "titulo": "A linguagem lógica e a figurada.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10",
+            "titulo": "Os diversos níveis de linguagem.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "11",
+            "titulo": "Os tipos de discurso: direto, indireto e indireto livre.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12",
+            "titulo": "As funções da linguagem.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "LÍNGUA INGLESA",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Estratégias de leitura em língua inglesa: compreensão de tipos textuais diversos; reconhecimento de informações específicas; capacidade de análise e síntese; inferência e predição; reconhecimento de organização semântica e discursiva; uso de palavras mais frequentes, sinonímia e antonímia; coerência e coesão; funções retóricas; percepção de metáfora e metonímia.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Aspectos sintático-gramaticais relevantes à compreensão de texto: artigos definidos e indefinidos; tempos e modos verbais; uso de preposições, conjunções e pronomes e modais; comparação; concordância nominal e verbal; formação e classe de palavras; expressões idiomáticas; relações de subordinação e coordenação; voz passiva, discurso direto e indireto",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "MATEMÁTICA FINANCEIRA",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Regra de três simples e composta, proporcionalidades e porcentagens.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Juros simples e compostos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Capitalização e desconto.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Taxas de juros nominal, efetiva, equivalente, real e aparente.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Rendas uniformes e variáveis.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6",
+            "titulo": "Planos de amortização de empréstimos e financiamentos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.1",
+            "titulo": "Sistema francês (tabela Price).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.2",
+            "titulo": "Sistema de Amortização Constante (SAC).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.3",
+            "titulo": "Sistema de Amortização Misto (SAM).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7",
+            "titulo": "Cálculo financeiro.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.1",
+            "titulo": "Custo real e efetivo das operações de financiamento, empréstimo e investimento.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8",
+            "titulo": "Avaliação de alternativas de investimento em economia estável e em ambiente inflacionário.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9",
+            "titulo": "Avaliação econômica de projetos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10",
+            "titulo": "Taxas de retorno e taxas internas de retorno.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "CONTROLE EXTERNO",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Entidades Fiscalizadoras Superiores (EFS).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.1",
+            "titulo": "Declaração de Lima.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.2",
+            "titulo": "Declaração do México - Independência das EFS (ISSAI 10).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.3",
+            "titulo": "Princípios de Transparência e Accountability (ISSAI 20).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Sistemas de Controle na Administração Pública Brasileira (artigos 70 a 74 da Constituição Federal).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.1",
+            "titulo": "Tribunais de Contas: funções, natureza jurídica e eficácia das decisões.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Tribunal de Contas da União: natureza, competência e jurisdição.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.1",
+            "titulo": "Organização. Julgamento e fiscalização.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.2",
+            "titulo": "Lei Orgânica do TCU (Lei nº 8.443/1992).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.3",
+            "titulo": "Regimento Interno do TCU (Resolução-TCU n° 246/2011).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "ADMINISTRAÇÃO PÚBLICA",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Administração Pública do modelo racional-legal ao paradigma pós burocrático.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Políticas públicas. O ciclo das políticas públicas (construção de agenda, formulação da política, processo decisório, implementação e avaliação).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Processos participativos de gestão pública: conselhos de gestão, orçamento participativo, parceria entre governo e sociedade.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Planejamento nas organizações públicas. O ciclo do planejamento (análise do ambiente, objetivos estratégicos, missão, visão, valores).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Governo eletrônico. Transparência da administração pública. Controle social e cidadania. Accountability.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6",
+            "titulo": "Gestão de Pessoas por Competências.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7",
+            "titulo": "Mudanças institucionais. Conselhos, Organizações Sociais, Organização da Sociedade Civil de Interesse Público (OSCIP), agência reguladora, agência executiva, consórcios públicos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8",
+            "titulo": "Gestão por resultados na produção de serviços públicos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9",
+            "titulo": "Governabilidade e governança.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9.1",
+            "titulo": "Intermediação de interesses (clientelismo, corporativismo e neocorporativismo).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9.2",
+            "titulo": "Princípios de governança pública.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10",
+            "titulo": "As políticas públicas no Estado brasileiro contemporâneo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10.1",
+            "titulo": "Descentralização e democracia.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10.2",
+            "titulo": "Participação, atores sociais e controle social.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10.3",
+            "titulo": "Gestão local, cidadania e equidade social.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10.4",
+            "titulo": "Corrupção e políticas públicas: fatores que influenciam a incidência de corrupção e fatores que promovem a qualidade das políticas públicas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "11",
+            "titulo": "O ciclo do planejamento em organizações (PDCA).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12",
+            "titulo": "Referencial Estratégico das Organizações.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12.1",
+            "titulo": "Análise de ambiente interno e externo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12.2",
+            "titulo": "Ferramentas de análise de ambiente: análise SWOT, análise de cenários, matriz GUT.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12.3",
+            "titulo": "Negócio, missão, visão de futuro, valores.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "13",
+            "titulo": "Indicadores de desempenho.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "13.1",
+            "titulo": "Tipos de indicadores.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "13.2",
+            "titulo": "Variáveis componentes dos indicadores.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "DIREITO CONSTITUCIONAL",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Constituição da República Federativa do Brasil de 1988.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.1",
+            "titulo": "Princípios fundamentais",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Aplicabilidade das normas constitucionais.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.1",
+            "titulo": "Normas de eficácia plena, contida e limitada.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.2",
+            "titulo": "Normas programáticas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Direitos e garantias fundamentais.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.1",
+            "titulo": "Direitos e deveres individuais e coletivos, direitos sociais, direitos de nacionalidade, direitos políticos, partidos políticos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Organização político-administrativa do Estado.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.1",
+            "titulo": "Estado federal brasileiro, União, estados, Distrito Federal, municípios e territórios.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Administração Pública.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5.1",
+            "titulo": "Disposições gerais, servidores públicos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6",
+            "titulo": "Poder executivo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.1",
+            "titulo": "Atribuições e responsabilidades do Presidente da República.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7",
+            "titulo": "Poder legislativo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.1",
+            "titulo": "Estrutura.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.2",
+            "titulo": "Funcionamento e atribuições.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.3",
+            "titulo": "Processo legislativo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.4",
+            "titulo": "Fiscalização contábil, financeira e orçamentária.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.5",
+            "titulo": "Comissões parlamentares de inquérito.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8",
+            "titulo": "Poder judiciário.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8.1",
+            "titulo": "Disposições gerais.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8.2",
+            "titulo": "Órgãos do poder judiciário.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8.2",
+            "titulo": "Órgãos do poder judiciário.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8.2.1",
+            "titulo": "Organização e competências, Conselho Nacional de Justiça.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8.2.1.1",
+            "titulo": "Composição e competências.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9",
+            "titulo": "Funções essenciais à justiça.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9.1",
+            "titulo": "Ministério Público e Advocacia Pública.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "DIREITO ADMINISTRATIVO",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Estado, governo e Administração Pública.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.1",
+            "titulo": "Conceitos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.2",
+            "titulo": "Elementos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Direito administrativo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.1",
+            "titulo": "Conceito.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.2",
+            "titulo": "Objeto.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.3",
+            "titulo": "Fontes.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Ato administrativo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.1",
+            "titulo": "Conceito, requisitos, atributos, classificação e espécies.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.2",
+            "titulo": "Extinção do ato administrativo: cassação, anulação, revogação e convalidação.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.3",
+            "titulo": "Decadência administrativa.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Agentes públicos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.1",
+            "titulo": "Legislação pertinente.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.1.1",
+            "titulo": "Lei nº 8.112/1990.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.1.2",
+            "titulo": "Disposições constitucionais aplicáveis.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.2",
+            "titulo": "Disposições doutrinárias.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.2.1",
+            "titulo": "Conceito.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.2.2",
+            "titulo": "Espécies.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.2.3",
+            "titulo": "Cargo, emprego e função pública.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.2.4",
+            "titulo": "Provimento.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.2.5",
+            "titulo": "Vacância.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.2.6",
+            "titulo": "Efetividade, estabilidade e vitaliciedade.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.2.7",
+            "titulo": "Remuneração.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.2.8",
+            "titulo": "Direitos e deveres.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.2.9",
+            "titulo": "Responsabilidade.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.2.10",
+            "titulo": "Processo administrativo disciplinar.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Poderes da Administração Pública.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5.1",
+            "titulo": "Hierárquico, disciplinar, regulamentar e de polícia.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5.2",
+            "titulo": "Uso e abuso do poder.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6",
+            "titulo": "Regime jurídico-administrativo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.1",
+            "titulo": "Conceito.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.2",
+            "titulo": "Princípios expressos e implícitos da Administração Pública.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7",
+            "titulo": "Responsabilidade civil do Estado.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.1",
+            "titulo": "Evolução histórica.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.2",
+            "titulo": "Responsabilidade civil do Estado no direito brasileiro.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.2.1",
+            "titulo": "Responsabilidade por ato comissivo do Estado.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.2.2",
+            "titulo": "Responsabilidade por omissão do Estado.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.3",
+            "titulo": "Requisitos para a demonstração da responsabilidade do Estado.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.4",
+            "titulo": "Causas excludentes e atenuantes da responsabilidade do Estado.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.5",
+            "titulo": "Reparação do dano.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.6",
+            "titulo": "Direito de regresso.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8",
+            "titulo": "Serviços públicos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8.1",
+            "titulo": "Conceito.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8.2",
+            "titulo": "Elementos constitutivos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8.3",
+            "titulo": "Formas de prestação e meios de execução.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8.4",
+            "titulo": "Delegação: concessão, permissão e autorização.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8.5",
+            "titulo": "Classificação.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8.6",
+            "titulo": "Princípios.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9",
+            "titulo": "Organização administrativa.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9.1",
+            "titulo": "Centralização, descentralização, concentração e desconcentração.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9.2",
+            "titulo": "Administração direta e indireta.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9.3",
+            "titulo": "Autarquias, fundações, empresas públicas e sociedades de economia mista.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9.4",
+            "titulo": "Entidades paraestatais e terceiro setor: serviços sociais autônomos, entidades de apoio, organizações sociais, organizações da sociedade civil de interesse público.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10",
+            "titulo": "Controle da Administração Pública.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10.1",
+            "titulo": "Controle exercido pela Administração Pública.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10.2",
+            "titulo": "Controle judicial.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10.3",
+            "titulo": "Controle legislativo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10.4",
+            "titulo": "Improbidade administrativa: Lei nº 8.429/1992.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "11",
+            "titulo": "Processo administrativo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "11.1",
+            "titulo": "Lei nº 9.784/1999.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12",
+            "titulo": "Licitações e contratos administrativos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12.1",
+            "titulo": "Legislação pertinente.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12.1.1",
+            "titulo": "Lei nº 8.666/1993.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12.1.2",
+            "titulo": "Lei 14.133/2021 (Nova Lei de Licitações e Contratos Administrativos).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12.1.3",
+            "titulo": "Lei nº 10.520/2002 e demais disposições normativas relativas ao pregão.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12.1.4",
+            "titulo": "Decreto nº 7.892/2013 (sistema de registro de preços).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12.1.5",
+            "titulo": "Lei nº 12.462/2011 (Regime Diferenciado de Contratações Públicas). Decreto nº 6.170/2007, Portaria Interministerial MPOG/MF/CGU nº 507/2011 e Instrução Normativa do STN nº 1/1997 (convênios e instrumentos congêneres).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12.1.6",
+            "titulo": "Encomenda Tecnológica (ETEC) - Lei 10.973/2004, alterada pela Lei 13.243/2016 e Decreto 9.283/2018.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12.2",
+            "titulo": "Fundamentos constitucionais.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "DIREITO CIVIL",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Lei de introdução às normas do direito brasileiro.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.1",
+            "titulo": "Vigência, aplicação, obrigatoriedade, interpretação e integração das leis.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.2",
+            "titulo": "Conflito das leis no tempo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.3",
+            "titulo": "Eficácia das leis no espaço.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Pessoas naturais.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.1",
+            "titulo": "Conceito.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.2",
+            "titulo": "Início da pessoa natural.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.3",
+            "titulo": "Personalidade.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.4",
+            "titulo": "Capacidade.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.5",
+            "titulo": "Direitos da personalidade.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.6",
+            "titulo": "Domicílio.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Pessoas jurídicas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.1",
+            "titulo": "Disposições Gerais.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.2",
+            "titulo": "Constituição.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.3",
+            "titulo": "Extinção.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.4",
+            "titulo": "Sociedades de fato.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.5",
+            "titulo": "Associações.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.6",
+            "titulo": "Fundações.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Bens imóveis, móveis e públicos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Fato jurídico.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6",
+            "titulo": "Negócio jurídico.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.1",
+            "titulo": "Disposições gerais.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.2",
+            "titulo": "Invalidade.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7",
+            "titulo": "Prescrição.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.1",
+            "titulo": "Disposições gerais.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8",
+            "titulo": "Decadência.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9",
+            "titulo": "Obrigações.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9.1",
+            "titulo": "Características.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9.2",
+            "titulo": "Adimplemento pelo pagamento.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9.3",
+            "titulo": "Inadimplemento das obrigações - disposições gerais e mora.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10",
+            "titulo": "Contratos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10.1",
+            "titulo": "Princípios.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10.2",
+            "titulo": "Contratos em geral.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10.3",
+            "titulo": "Disposições gerais.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "11",
+            "titulo": "Responsabilidade civil objetiva e subjetiva.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "11.1",
+            "titulo": "Obrigação de indenizar.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "11.2",
+            "titulo": "Dano material.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "DIREITO PROCESSUAL CIVIL",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Princípios do processo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.1",
+            "titulo": "Princípio do devido processo legal.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.2",
+            "titulo": "Princípios do contraditório, da ampla defesa e do juiz natural.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Jurisdição.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Ação.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.1",
+            "titulo": "Condições da ação.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.2",
+            "titulo": "Classificação.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Atos judiciais.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.1",
+            "titulo": "Despachos, decisões interlocutórias e sentenças.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Coisa julgada material.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6",
+            "titulo": "Controle judicial dos atos administrativos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7",
+            "titulo": "Processo Estrutural. Problema Estrutural. Decisão Estrutural.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "SISTEMA NORMATIVO ANTICORRUPÇÃO",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Crimes contra a Administração Pública.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Lei Anticorrupção 12.846/2013.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Lei nº 12.850/2013 (Crime organizado).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Lei 9.613/1998 (Crimes de lavagem de dinheiro).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Lei 13.869/2019 Lei de abuso de autoridade.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6",
+            "titulo": "Convenção de Mérida (Decreto nº 5687/2006).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7",
+            "titulo": "Convenção de Palermo (Decreto nº 5.015/2004).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "titulo": "CONHECIMENTOS ESPECÍFICOS",
+    "subsecoes": [
+      {
+        "titulo": "ESTATÍSTICA",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Metodologia e utilização da estatística. Variáveis quantitativas e qualitativas. Séries estatísticas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Organização e apresentação de variáveis.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Métodos para sumarização e análise exploratória de dados.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.1",
+            "titulo": "Distribuição de frequências: absoluta, relativa, acumulada.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.2",
+            "titulo": "Medidas de posição: média, moda, mediana e quartis.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.3",
+            "titulo": "Medidas de dispersão: amplitude, variância, desvio-padrão, coeficiente de variação, amplitude interquartil.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.4",
+            "titulo": "Correlação.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.5",
+            "titulo": "Histogramas e curvas de frequência.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.6",
+            "titulo": "Diagrama de caixa ( boxplot) e identificação de valores atípicos (outliers).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.7",
+            "titulo": "Diagrama de dispersão.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Análise de dados categorizados.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Distribuições de probabilidade. Distribuição binomial. Distribuição normal.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6",
+            "titulo": "Inferência estatística. Estimação de parâmetros por ponto e por intervalo. Intervalo de confiança. Testes de hipóteses. Testes paramétricos: médias e proporções.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7",
+            "titulo": "Análise de regressão linear.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8",
+            "titulo": "Técnicas de Amostragem.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9",
+            "titulo": "Análise multivariada.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10",
+            "titulo": "Séries Temporais: componentes estruturais das séries temporais e médias móveis.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "ANÁLISE DE DADOS",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Dados estruturados e não estruturados. Dados abertos. Coleta, tratamento, armazenamento, integração e recuperação de dados. Processos de ETL. Formatos e tecnologias: XML, JSON, CSV. Representação de dados numéricos, textuais e estruturados; aritmética computacional. Representação de dados espaciais para georeferenciamento e geosensoriamento.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Bancos de dados relacionais: teoria e implementação. Uso do SQL como DDL, DML, DCL. Processamento de transações.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Exploração de dados: conceituação e características. Noções do modelo CRISP-DM. Técnicas para pré-processamento de dados. Técnicas e tarefas de mineração de dados. Classificação. Regras de associação. Análise de agrupamentos (clusterização). Detecção de anomalias. Modelagem preditiva.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Conceitos de PLN: semântica vetorial, redução de dimensionalidade, modelagem de tópicos latentes, classificação de textos, análise de sentimentos, representações com n-gramas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Conceitos de ML: fontes de erro em modelos preditivos, validação e avaliação de modelos preditivos, underfitting, overfitting e técnicas de regularização, otimização de hiperparâmetros, separabilidade de dados, redução da dimensionalidade. Modelos lineares, árvores de decisão, redes neurais feed-forward, classificador Naive Bayes.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6",
+            "titulo": "Linguagem Python: sintaxe, variáveis, tipos de dados e estruturas de controle de fluxo. Estruturas de dados, funções e arquivos. Bibliotecas: NLTK, Tensor Flow, Pandas, Numpy, Arrow, Sklearn, Scipy.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7",
+            "titulo": "Noções da Linguagem R. Sintaxe, tipos de dados, operadores, comandos de repetição, estruturas de dados, gráficos, Data frames. Tidyverse.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8",
+            "titulo": "Pareamento de dados ( record linkage). Processo e etapas. Classificação. Qualidade de dados pareados. Análise de dados pareados.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9",
+            "titulo": "Segurança da informação: Confidencialidade, integridade, disponibilidade, autenticidade e não repúdio. Políticas de segurança. Políticas de classificação da informação. Sistemas de gestão de segurança da informação. Tratamento de incidentes de segurança da informação.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10",
+            "titulo": "Lei de Acesso à Informação (Lei nº 12.527/2011): conceitos e aplicação. Lei 13.709/2018, Lei Geral de Proteção de Dados Pessoais (LGPD).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "AUDITORIA GOVERNAMENTAL",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Conceito, evolução.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.1",
+            "titulo": "Auditoria interna e externa: papéis.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.2",
+            "titulo": "Auditoria governamental segundo a INTOSAI (International Organization of Supreme Audit Institutions).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Normas internacionais para o exercício profissional da auditoria.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.1",
+            "titulo": "Normas da INTOSAI: princípios fundamentais de auditoria e código de ética do setor público (ISSAls 100, 130).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Normas de auditoria do TCU (Portaria-TCU n° 280/2010).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Auditorias de conformidade, financeira e operacional.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.1",
+            "titulo": "Conceitos, características e finalidades.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.2",
+            "titulo": "Outros instrumentos de fiscalização: levantamento, monitoramento, acompanhamento e inspeção.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.3",
+            "titulo": "Planejamento de auditoria.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.3.1",
+            "titulo": "Modelo de risco de auditoria.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.3.2",
+            "titulo": "Termos da auditoria e estratégia global de auditoria.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.3.3",
+            "titulo": "Técnicas para obtenção do entendimento do objeto e de seu ambiente.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.3.4",
+            "titulo": "Materialidade.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.3.5",
+            "titulo": "Escopo do trabalho.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.3.6",
+            "titulo": "Avaliação dos riscos gerais do trabalho, dos riscos inerentes e de controle.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.3.7",
+            "titulo": "Respostas do auditor aos riscos gerais do trabalho.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.3.8",
+            "titulo": "Respostas do auditor aos riscos de distorção relevante ou residuais (natureza, época e extensão).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.3.9",
+            "titulo": "Matriz de Planejamento.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.3.10",
+            "titulo": "Métodos de amostragem aplicáveis às auditorias: por atributos e por unidade monetária.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.4",
+            "titulo": "Técnicas e procedimentos: inspeção documental, inspeção física, reexecução, recálculo, observação direta, entrevista indagação, circularização, conciliação, procedimentos de revisão analítica, cruzamento eletrônico de dados.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.5",
+            "titulo": "Suficiência e adequação das evidências.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.6",
+            "titulo": "Matriz de Achados e Matriz de Responsabilização.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.7",
+            "titulo": "Tipos de opinião de auditoria em trabalhos de asseguração razoável.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.8",
+            "titulo": "Documentação da auditoria.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.9",
+            "titulo": "Supervisão e Controle de Qualidade (Portaria-TCU n° 280/2010).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Normas para a tomada e prestação de contas dos administradores e responsáveis da Administração Pública Federal, para fins de julgamento pelo Tribunal de Contas da União. (IN-TCU 84, de 22 de abril de 2020).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "CONTABILIDADE APLICADA AO SETOR PÚBLICO",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "NBC TSP Estrutura Conceitual - estrutura conceitual para elaboração e divulgação de informação contábil de propósito geral pelas entidades do setor público.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.1",
+            "titulo": "Relatório Contábil de Propósito Geral das Entidades do Setor Público (RCPG): objetivos e usuários; prestação de contas e responsabilização ( accountability) e tomada de decisão; a continuidade das entidades do setor público; situação patrimonial, desempenho e fluxos de caixa; Regime de Competência e Regime de Caixa.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.2",
+            "titulo": "Características qualitativas da informação: características qualitativas fundamentais; características qualitativas de melhoria.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.3",
+            "titulo": "Características da entidade que reporta a informação contábil.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.4",
+            "titulo": "Elementos das Demonstrações Contábeis: propósito e definições de ativos e passivos, receitas e despesas; superávit ou déficit do exercício.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.5",
+            "titulo": "Reconhecimento e mensuração nas demonstrações contábeis: evidenciação, reconhecimento e desreconhecimento; bases de mensuração para ativos e passivo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Estrutura e apresentação das Demonstrações Contábeis do Setor Público.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.1",
+            "titulo": "Definições, finalidade, componentes, estrutura e conteúdo das demonstrações: de acordo com a Lei 4320/1964; de acordo com a NBC T SP 11; de acordo com o MCASP.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Plano de Contas aplicado ao Setor Público.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.1",
+            "titulo": "Conceito de contas patrimoniais e de resultado.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.2",
+            "titulo": "Função e estrutura das contas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.3",
+            "titulo": "Escrituração: débito, crédito, saldo, sistema de partidas dobradas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Sistema de Contabilidade Federal.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.1",
+            "titulo": "Organização e competências (Lei 10180/20021 e Decreto 6976/2009).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4.2",
+            "titulo": "Sistema Integrado de Administração Financeira do Governo Federal (SIAFI): conceito, objetivos, usuários e segurança do sistema (princípios e instrumentos).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Tópicos selecionados da Lei Complementar nº 101/2000.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5.1",
+            "titulo": "Conceitos de dívida pública e restos a pagar, escrituração e consolidação das contas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5.2",
+            "titulo": "Relatório resumido da execução orçamentária: estrutura, composição.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5.3",
+            "titulo": "Relatório de gestão fiscal: estrutura, composição.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6",
+            "titulo": "Tópicos especiais da contabilidade aplicada ao setor público.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.1",
+            "titulo": "Procedimentos Contábeis Orçamentários (Regime orçamentário e Regime Contábil ou patrimonial (MCASP)).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.2",
+            "titulo": "Procedimentos Contábeis Patrimoniais conforme Manual de Contabilidade Aplicada ao Setor Público (MCASP), 8ª edição, aprovado pela Portaria STN nº 877, de 18 de dezembro de 2018.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.3",
+            "titulo": "Restos a pagar, empenho, liquidação e pagamento (Lei 4.320/1964 e MCASP).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.4",
+            "titulo": "Apresentação de Informação Orçamentária nas Demonstrações Contábeis (NBC TSP 13).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.5",
+            "titulo": "Normas Internacionais de Contabilidade Aplicadas ao Setor Público (IPSAS).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.6",
+            "titulo": "Noções de Informações de Custos no Setor Público: NBC T 16.11 - Sistema de Informação de Custos do Setor Público.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.7",
+            "titulo": "Manual de Informações de Custos do Governo Federal, aprovado pela Portaria STN nº 518/2018.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7",
+            "titulo": "Trabalho de asseguração (NBC TA Estrutura Conceitual - Estrutura Conceitual para Trabalhos de Asseguração).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "ANÁLISE DAS DEMONSTRAÇÕES CONTÁBEIS",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Conceitos, cálculos, vantagens e desvantagens dos indicadores.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Análise horizontal e vertical.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Indicadores de estrutura de capital.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Indicadores de liquidez.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Informações extraídas das Notas Explicativas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "ADMINISTRAÇÃO FINANCEIRA E ORÇAMENTÁRIA",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Funções do Governo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.1",
+            "titulo": "Falhas de mercado e produção de bens públicos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.2",
+            "titulo": "Políticas econômicas governamentais (alocativa, distributiva e estabilizadora).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.3",
+            "titulo": "Federalismo Fiscal.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "Orçamento público: conceitos e princípios.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.1",
+            "titulo": "Evolução conceitual do orçamento público.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2.2",
+            "titulo": "Orçamento-Programa: fundamentos e técnicas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "Orçamento público no Brasil: Títulos I, IV, V e VI da Lei nº 4.320/1964.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.1",
+            "titulo": "Orçamento na Constituição de 1988: Plano Plurianual (PPA), Lei de Diretrizes Orçamentárias (LDO), Lei Orçamentária Anual (LOA).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.2",
+            "titulo": "Leis de Créditos Adicionais.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.3",
+            "titulo": "Emendas parlamentares ao Orçamento.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Plano Plurianual (PPA): estrutura, base legal, objetivos, conteúdo, tipos de programas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Lei de Diretrizes Orçamentárias (LDO): objetivos, estrutura, base legal e conteúdo, Anexos de Metas Fiscais, Anexos de Riscos Fiscais, critérios para limitação de empenho.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6",
+            "titulo": "Classificações orçamentárias.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.1",
+            "titulo": "Classificação da despesa pública: institucional, funcional, programática, pela natureza e classificações adicionais previstas no Manual Técnico de Orçamento - MTO.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6.2",
+            "titulo": "Classificação da receita pública: institucional, por categorias econômicas, por fontes e classificações adicionais previstas no Manual Técnico de Orçamentária - MTO.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7",
+            "titulo": "Ciclo orçamentário: elaboração da proposta, discussão, votação e aprovação da lei de orçamento.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.1",
+            "titulo": "Execução orçamentária e financeira: estágios e execução da despesa pública e da receita pública.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.2",
+            "titulo": "Programação de desembolso e mecanismos retificadores do orçamento.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7.3",
+            "titulo": "Conta Única do Tesouro Nacional: conceito e previsão legal.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8",
+            "titulo": "Gestão organizacional das finanças públicas: sistema de planejamento e orçamento e de programação financeira constantes da Lei nº 10.180/2001.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9",
+            "titulo": "Tópicos selecionados da Lei Complementar nº 101/2000: princípios, conceitos, planejamento, renúncia de receitas, geração de despesas, transferências voluntárias, destinação de recursos para o setor privado, transparência da gestão fiscal, prestação de contas e fiscalização da gestão fiscal.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10",
+            "titulo": "Sistemas de informação da Administração Pública Federal: SIAFI, SIASG e SICONV. Finalidade. Principais informações.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "11",
+            "titulo": "Lei nº 12.527/2011 - Lei de Acesso à Informação e portarias regulamentadoras.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      },
+      {
+        "titulo": "ECONOMIA DO SETOR PÚBLICO E DA REGULAÇÃO",
+        "topicos": [
+          {
+            "codigo": "1",
+            "titulo": "Introdução: o sistema de contas nacionais e as identidades macroeconômicas básicas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.1",
+            "titulo": "Produto agregado e os problemas de mensuração.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.2",
+            "titulo": "Produto nominal x produto real.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.3",
+            "titulo": "Contas do sistema monetário.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "1.4",
+            "titulo": "Balanço de pagamentos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "2",
+            "titulo": "O modelo keynesiano básico: o multiplicador e o papel dos gastos do governo.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3",
+            "titulo": "O modelo IS/LM: impactos das políticas monetária e fiscal.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.1",
+            "titulo": "Políticas macroeconômicas em diferentes regimes cambiais.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.2",
+            "titulo": "A avaliação do gasto público.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.3",
+            "titulo": "O financiamento do setor público no Brasil.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "3.4",
+            "titulo": "Conceitos de regulação, desregulação e re-regulação.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "4",
+            "titulo": "Teoria econômica de indústrias reguladas.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "5",
+            "titulo": "Estrutura de mercado, concorrência perfeita e monopolística, oligopólio, monopólio.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "6",
+            "titulo": "Falhas de mercado, externalidades, bens públicos, assimetria de informação (seleção adversa e perigo moral).",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "7",
+            "titulo": "Regulação e formação de preços para estruturas de mercado de concorrência imperfeita.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "8",
+            "titulo": "Conceitos básicos sobre regimes tarifários.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "9",
+            "titulo": "Tarifação por custo de serviço.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "10",
+            "titulo": "Tarifação por preço teto.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "11",
+            "titulo": "Regulação por incentivos.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          },
+          {
+            "codigo": "12",
+            "titulo": "Regulação para competição.",
+            "aulas_direcao": "",
+            "questoes": "",
+            "revisao": ""
+          }
+        ]
+      }
+    ]
+  }
+]
