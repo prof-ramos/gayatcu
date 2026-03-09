@@ -98,18 +98,18 @@ This app supports PostgreSQL automatically. If a DB URL is configured, it is use
 
 ```toml
 [database]
-url = "postgresql+psycopg://<user>:<password>@<host>:6543/postgres?sslmode=require&pgbouncer=true"
+url = "postgresql+psycopg://<user>:<password>@<host>:6543/postgres?sslmode=require"
 ```
 
 ### Environment variable fallback
 
 ```toml
-DATABASE_URL = "postgresql+psycopg://<user>:<password>@<host>:6543/postgres?sslmode=require&pgbouncer=true"
+DATABASE_URL = "postgresql+psycopg://<user>:<password>@<host>:6543/postgres?sslmode=require"
 ```
 
 Notes:
 - Keep `sslmode=require`.
-- For Supabase pooler, port `6543` with `pgbouncer=true` is recommended.
+- For Supabase pooler, port `6543` is recommended.
 - Never commit credentials to Git.
 
 ## Resource Limits

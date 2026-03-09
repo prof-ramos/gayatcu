@@ -197,13 +197,13 @@ Exemplo de secrets no Streamlit Cloud:
 
 ```toml
 [database]
-url = "postgresql+psycopg://<user>:<password>@<host>:6543/postgres?sslmode=require&pgbouncer=true"
+url = "postgresql+psycopg://<user>:<password>@<host>:6543/postgres?sslmode=require"
 ```
 
 Alternativa:
 
 ```toml
-DATABASE_URL = "postgresql+psycopg://<user>:<password>@<host>:6543/postgres?sslmode=require&pgbouncer=true"
+DATABASE_URL = "postgresql+psycopg://<user>:<password>@<host>:6543/postgres?sslmode=require"
 ```
 
 Importante:

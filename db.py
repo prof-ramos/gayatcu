@@ -10,6 +10,7 @@ import os
 from datetime import datetime, timedelta
 from typing import Any
 from urllib.error import HTTPError, URLError
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from urllib.request import Request, urlopen
 
 import streamlit as st
@@ -28,6 +29,7 @@ _DB_URL_ENV_KEYS = (
     "POSTGRES_URL",
     "POSTGRES_PRISMA_URL",
 )
+_UNSUPPORTED_DB_QUERY_PARAMS = {"pgbouncer", "supa"}
 
 # --- Models ---
 
@@ -75,9 +77,20 @@ def _normalize_sqlalchemy_url(url: str) -> str:
     normalized = url.strip()
     if normalized.startswith("postgres://"):
         # Compatibility with legacy postgres:// URLs
-        return normalized.replace("postgres://", "postgresql+psycopg://", 1)
-    if normalized.startswith("postgresql://"):
-        return normalized.replace("postgresql://", "postgresql+psycopg://", 1)
+        normalized = normalized.replace("postgres://", "postgresql+psycopg://", 1)
+    elif normalized.startswith("postgresql://"):
+        normalized = normalized.replace("postgresql://", "postgresql+psycopg://", 1)
+
+    if normalized.startswith("postgresql+psycopg://"):
+        parsed = urlparse(normalized)
+        query_items = parse_qsl(parsed.query, keep_blank_values=True)
+        filtered_query_items = [
+            (key, value)
+            for key, value in query_items
+            if key.lower() not in _UNSUPPORTED_DB_QUERY_PARAMS
+        ]
+        normalized = urlunparse(parsed._replace(query=urlencode(filtered_query_items)))
+
     return normalized
 
 

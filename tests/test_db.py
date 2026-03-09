@@ -454,3 +454,19 @@ class TestRemoteJsonSnapshot:
         stats = get_statistics(target_engine)
         assert stats["total_topics"] == 3
         assert stats["completed_topics"] == 1
+
+
+class TestDatabaseUrlNormalization:
+    """Testes para normalização de URL de banco."""
+
+    def test_normalize_postgres_url_removes_unsupported_params(self):
+        raw_url = (
+            "postgres://user:pass@host:6543/postgres"
+            "?sslmode=require&pgbouncer=true&supa=base-pooler.x"
+        )
+        normalized = db_module._normalize_sqlalchemy_url(raw_url)
+
+        assert normalized.startswith("postgresql+psycopg://")
+        assert "pgbouncer=" not in normalized
+        assert "supa=" not in normalized
+        assert "sslmode=require" in normalized
