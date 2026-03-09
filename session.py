@@ -93,8 +93,9 @@ def get_db() -> Engine:
         return st.session_state.db_connection
     except (SQLAlchemyError, OSError) as e:
         logger.error("Error getting database connection: %s", e)
-        st.error("⚠️ Banco de dados indisponível. Recarregue a página.")
-        st.stop()
+        st.error(f"Erro ao obter conexão com banco: {e}")
+        # Fallback: create new connection
+        return get_db_connection()
 
 
 def initialize_database() -> bool:
@@ -214,5 +215,4 @@ class SessionStateManager:
         function. It can be called from SessionStateManager for consistency.
         """
         from monitoring import cleanup_session_state
-
         cleanup_session_state()
