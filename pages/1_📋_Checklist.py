@@ -73,7 +73,14 @@ def main():
         return
 
     # Get all progress data from database
-    progress_data = get_all_progress(engine)
+    # Use explicit large-page fetch and normalize response shape
+    # to stay compatible with both paginated and legacy return formats.
+    progress_result = get_all_progress(engine, offset=0, limit=5000)
+    progress_data = (
+        progress_result["data"]
+        if isinstance(progress_result, dict)
+        else progress_result
+    )
 
     # Create a dictionary for quick lookup of completion status
     completion_status = {p["id"]: p["completed_at"] is not None for p in progress_data}
@@ -145,7 +152,7 @@ def main():
                     col_check, col_text = st.columns([1, 12])
                     with col_check:
                         new_state = st.checkbox(
-                            "",
+                            topic["titulo"],
                             value=is_completed,
                             key=checkbox_key,
                             label_visibility="collapsed",
@@ -161,7 +168,7 @@ def main():
                             # Check if already confirmed
                             if not SessionStateManager.get_confirm_state(topic_id):
                                 # Show confirmation dialog
-                                confirm_completion(topic['titulo'], topic_id)
+                                confirm_completion(topic["titulo"], topic_id)
                             else:
                                 # Mark as complete
                                 if mark_topic_complete(engine, topic_id):

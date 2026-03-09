@@ -172,7 +172,12 @@ def main():
         upcoming = get_upcoming_reviews(engine, 7)
         st.metric("Próximos 7 dias", f"{len(upcoming)}")
     with col3:
-        all_progress = get_all_progress(engine)
+        progress_result = get_all_progress(engine, offset=0, limit=5000)
+        all_progress = (
+            progress_result["data"]
+            if isinstance(progress_result, dict)
+            else progress_result
+        )
         completed = [p for p in all_progress if p["completed_at"]]
         total_reviews = sum(p["review_count"] for p in completed)
         st.metric("Total de Revisões", f"{total_reviews}")
