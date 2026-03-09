@@ -1,16 +1,16 @@
-import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from session import get_db, initialize_database
+import streamlit as st
+
 from db import get_statistics
+from session import get_db, initialize_database
 from utils import get_completion_percentage, get_section_progress
 
 st.set_page_config(
-    page_title="GayATCU - Dashboard de Estudos TCU",
-    page_icon="📘",
-    layout="wide"
+    page_title="GayATCU - Dashboard de Estudos TCU", page_icon="📘", layout="wide"
 )
+
 
 def main():
     # Initialize database and import data if needed
@@ -20,11 +20,23 @@ def main():
     db = get_db()
 
     # Calculate metrics using database
-    stats = get_statistics(db)
-    total_topics = stats['total_topics']
-    completed_topics = stats['completed_topics']
-    completion_pct = get_completion_percentage(db)
-    section_progress = get_section_progress(db)
+    try:
+        stats = get_statistics(db)
+        total_topics = stats.get("total_topics", 0)
+        completed_topics = stats.get("completed_topics", 0)
+    except Exception:
+        total_topics = 0
+        completed_topics = 0
+
+    try:
+        completion_pct = get_completion_percentage(db)
+    except Exception:
+        completion_pct = 0.0
+
+    try:
+        section_progress = get_section_progress(db)
+    except Exception:
+        section_progress = []
 
     # Dashboard title
     st.title("📘 GayATCU - Dashboard de Estudos TCU")
@@ -47,22 +59,28 @@ def main():
         st.subheader("Progresso Geral")
         pending_topics = max(total_topics - completed_topics, 0)
 
-        fig_donut = go.Figure(data=[go.Pie(
-            labels=["Concluídos", "Pendentes"],
-            values=[completed_topics, pending_topics],
-            hole=0.55,
-            marker=dict(colors=["#00CC96", "#EF553B"])
-        )])
+        fig_donut = go.Figure(
+            data=[
+                go.Pie(
+                    labels=["Concluídos", "Pendentes"],
+                    values=[completed_topics, pending_topics],
+                    hole=0.55,
+                    marker=dict(colors=["#00CC96", "#EF553B"]),
+                )
+            ]
+        )
 
         fig_donut.update_layout(
             margin=dict(l=10, r=10, t=10, b=10),
-            annotations=[dict(
-                text=f"{completion_pct:.1f}%",
-                x=0.5,
-                y=0.5,
-                showarrow=False,
-                font=dict(size=24)
-            )]
+            annotations=[
+                dict(
+                    text=f"{completion_pct:.1f}%",
+                    x=0.5,
+                    y=0.5,
+                    showarrow=False,
+                    font=dict(size=24),
+                )
+            ],
         )
         fig_donut.update_traces(hovertemplate="%{label}: %{value} tópicos")
 
@@ -82,20 +100,21 @@ def main():
                 orientation="h",
                 labels={"percentage": "Porcentagem (%)", "section": "Seção"},
                 color="percentage",
-                color_continuous_scale="Viridis"
+                color_continuous_scale="Viridis",
             )
 
             fig_bar.update_layout(
                 margin=dict(l=10, r=10, t=10, b=10),
                 xaxis_title="Porcentagem (%)",
                 yaxis_title="Seção",
-                showlegend=False
+                showlegend=False,
             )
             fig_bar.update_traces(hovertemplate="%{y}: %{x:.1f}%")
 
             st.plotly_chart(fig_bar, use_container_width=True)
         else:
             st.info("Nenhum dado de progresso disponível.")
+
 
 if __name__ == "__main__":
     main()

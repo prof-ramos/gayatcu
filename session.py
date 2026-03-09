@@ -5,10 +5,11 @@ Provides centralized database connection management and caching
 following Streamlit best practices.
 """
 
-import streamlit as st
-import sqlite3
 import logging
-from typing import Optional
+import sqlite3
+
+import streamlit as st
+
 from db import init_db
 
 # Configure logging
@@ -27,8 +28,8 @@ def get_db_connection() -> sqlite3.Connection:
         sqlite3.Connection: Active database connection with row factory enabled
     """
     try:
-        conn = sqlite3.connect("data/study_tracker.db", check_same_thread=False)
-        conn.row_factory = sqlite3.Row
+        # Create connection and automatically initialize schema and directories
+        conn = init_db("data/study_tracker.db")
         logger.info("Database connection established")
         return conn
     except sqlite3.Error as e:
@@ -50,7 +51,7 @@ def get_db() -> sqlite3.Connection:
     """
     try:
         # Use session state to cache connection within the same script run
-        if 'db_connection' not in st.session_state:
+        if "db_connection" not in st.session_state:
             st.session_state.db_connection = get_db_connection()
 
         return st.session_state.db_connection
@@ -84,6 +85,7 @@ def initialize_database() -> bool:
         if topic_count == 0:
             logger.info("Database empty, importing topics from conteudo.json")
             from db import import_topics_from_json
+
             imported = import_topics_from_json(conn)
             logger.info(f"Imported {imported} topics successfully")
             return True
@@ -108,6 +110,7 @@ def safe_db_operation(operation_func, default_value=None):
     Returns:
         Result of operation or default_value on failure
     """
+
     def wrapper(*args, **kwargs):
         try:
             return operation_func(*args, **kwargs)
@@ -119,4 +122,5 @@ def safe_db_operation(operation_func, default_value=None):
             logger.error(f"Unexpected error: {e}")
             st.warning(f"Erro inesperado: {e}")
             return default_value
+
     return wrapper

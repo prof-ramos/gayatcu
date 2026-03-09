@@ -1,4 +1,11 @@
 # Database files
+data/**/*.db
 data/*.db
 *.db-shm
 *.db-wal
+*.db-journal
+
+# Agent state and memory
+.omc/state/
+.omc/project-memory.json
+.omc/sessions/

@@ -1,7 +1,7 @@
 # Dashboard de Estudos TCU V2 - Implementation Plan
 
 **Project:** GayATCU - TCU Exam Study Dashboard
-**Date:** 2025-03-08
+**Date:** 2026-03-09
 **Scope:** Complete Feature Set (MVP + Advanced Features)
 **Complexity:** MEDIUM
 
@@ -12,11 +12,13 @@
 This project is a Streamlit-based study tracking dashboard for TCU (Tribunal de Contas da União) exam preparation. The dashboard will help students track their progress through 345 study topics organized across 17 subsections.
 
 **Existing Assets:**
+
 - `/Users/gabrielramos/gayatcu/conteudo.json` - Complete study content with 345 topics
 - Python 3.13 virtual environment already configured
 - Git repository initialized
 
 **Data Structure (conteudo.json):**
+
 ```json
 [
   {
@@ -46,30 +48,34 @@ This project is a Streamlit-based study tracking dashboard for TCU (Tribunal de 
 ## Work Objectives
 
 ### Primary Goals
+
 1. Build a complete Streamlit dashboard with 4 main pages
 2. Implement SQLite database for progress tracking
 3. Create spaced repetition review system (24h/7d/15d/30d intervals)
 4. Generate statistics and progress visualizations
 
 ### Success Criteria
+
 - [ ] Dashboard loads and displays all 345 topics from conteudo.json
 - [ ] Users can mark topics as complete with timestamps
 - [ ] Review page shows topics due for spaced repetition
 - [ ] Statistics page shows progress by section and overall completion
 - [ ] Data persists across sessions in SQLite database
-- [ ] Application can be deployed to Streamlit Cloud
+- [ ] Application can be deployed locally or to a platform supporting SQLite (e.g. Heroku/GCP)
 
 ---
 
 ## Architecture
 
 ### Technology Stack
+
 - **Framework:** Streamlit 1.28+
 - **Database:** SQLite3 (built-in Python)
 - **Language:** Python 3.13
 - **UI Components:** Streamlit native widgets, Plotly for charts
 
 ### Project Structure
+
 ```
 gayatcu/
 ├── app.py                  # Main Streamlit application
@@ -89,6 +95,7 @@ gayatcu/
 ```
 
 ### Database Schema
+
 ```sql
 -- Topics table
 CREATE TABLE topics (
@@ -100,12 +107,6 @@ CREATE TABLE topics (
     UNIQUE(codigo, secao, subsecao)
 );
 
--- Performance indexes (CRITICAL for query performance)
-CREATE INDEX idx_next_review ON progress(next_review_date);
-CREATE INDEX idx_codigo ON topics(codigo);
-CREATE INDEX idx_secao_subsecao ON topics(secao, subsecao);
-CREATE INDEX idx_topic_id_progress ON progress(topic_id);
-
 -- Progress tracking
 CREATE TABLE progress (
     topic_id INTEGER PRIMARY KEY,
@@ -115,6 +116,14 @@ CREATE TABLE progress (
     next_review_date DATE,
     FOREIGN KEY (topic_id) REFERENCES topics(id)
 );
+
+-- Performance indexes (CRITICAL for query performance)
+CREATE INDEX idx_next_review ON progress(next_review_date);
+CREATE INDEX idx_codigo ON topics(codigo);
+CREATE INDEX idx_secao_subsecao ON topics(secao, subsecao);
+CREATE INDEX idx_topic_id_progress ON progress(topic_id);
+
+-- (Tabela progress já foi definida antes dos índices)
 
 -- Review log
 CREATE TABLE review_log (
@@ -131,9 +140,11 @@ CREATE TABLE review_log (
 ## Security Requirements
 
 ### SQL Injection Prevention (MANDATORY)
+
 **CRITICAL:** ALL database operations MUST use parameterized queries with `?` placeholders. NEVER interpolate user input directly into SQL strings.
 
 **Correct (Parameterized):**
+
 ```python
 cursor.execute(
     "SELECT * FROM topics WHERE codigo = ? AND secao = ?",
@@ -142,21 +153,25 @@ cursor.execute(
 ```
 
 **Incorrect (Vulnerable to SQL Injection):**
+
 ```python
 # NEVER DO THIS
 cursor.execute(f"SELECT * FROM topics WHERE codigo = '{codigo}' AND secao = '{secao}'")
 ```
 
 **All CRUD operations in `db.py` must follow this pattern:**
+
 - `mark_topic_complete()`: Use `?` for topic_id
 - `get_topics_due_for_review()`: Use `?` for date parameter
 - `mark_review_complete()`: Use `?` for topic_id and interval
 - `import_topics_from_json()`: Use `?` for all INSERT values
 
 ### Connection Management (MANDATORY)
+
 **CRITICAL:** Cache database connection in `st.session_state` to avoid re-initializing on every rerun.
 
 **Implementation Pattern:**
+
 ```python
 # In app.py and all page files
 def get_db():
@@ -174,6 +189,7 @@ conn = get_db()
 ## Guardrails
 
 ### Must Have (Non-Negotiable)
+
 - SQLite database for data persistence
 - Streamlit multi-page architecture
 - Spaced repetition algorithm (24h → 7d → 15d → 30d)
@@ -182,6 +198,7 @@ conn = get_db()
 - Mobile-responsive layout
 
 ### Must NOT Have
+
 - No external authentication required (single-user local app)
 - No cloud database dependencies (SQLite file-based only)
 - No hardcoded content - everything from conteudo.json
@@ -197,12 +214,14 @@ conn = get_db()
 **Decision:** This application is designed for LOCAL USE ONLY.
 
 **Rationale:**
+
 - Streamlit Cloud resets filesystem on each deployment, losing SQLite data
 - Single-user use case doesn't justify cloud database complexity
 - User data privacy is maintained locally
 - Simpler architecture, faster development
 
 **Deployment Model:**
+
 ```bash
 # User runs locally
 source .venv/bin/activate
@@ -210,16 +229,19 @@ streamlit run app.py
 ```
 
 **Data Persistence:**
+
 - SQLite database stored in `data/study_tracker.db`
 - User responsible for backing up their data
 - Export functionality provided (Phase 7) for manual backups
 
 **NOT Supported:**
+
 - Streamlit Cloud deployment (data loss on redeploy)
 - Multi-user access
 - Cloud database sync
 
 **Future Enhancement Path** (if cloud deployment is needed later):
+
 - Replace SQLite with PostgreSQL via `st.connection()`
 - Add user authentication
 - Implement session management
@@ -295,35 +317,41 @@ streamlit run app.py
 ### Phase 1: Project Setup (Est. 30 min)
 
 **Task 1.1: Create Directory Structure**
+
 - [ ] Create `pages/` directory
 - [ ] Create `data/` directory
 - [ ] Create `.streamlit/` directory
 - [ ] Add `.gitignore` entry for `data/*.db` and `*.db-shm` and `*.db-wal`
 
 **Acceptance Criteria:**
+
 ```bash
 # Verify structure exists
 ls -la pages/ .streamlit/ data/
 ```
 
 **Task 1.2: Create requirements.txt**
+
 - [ ] Add `streamlit>=1.28.0`
 - [ ] Add `plotly>=5.18.0`
 - [ ] Add `pandas>=2.0.0`
 
 **Acceptance Criteria:**
+
 ```bash
 # File exists with correct dependencies
 cat requirements.txt
 ```
 
 **Task 1.3: Configure Streamlit**
+
 - [ ] Create `.streamlit/config.toml`
 - [ ] Set app title to "GayATCU - Dashboard de Estudos TCU"
 - [ ] Configure theme colors
 - [ ] Enable wide mode
 
 **Acceptance Criteria:**
+
 ```toml
 [theme]
 primaryColor = "#FF6B6B"
@@ -341,12 +369,14 @@ level = "info"
 ### Phase 2: Database Layer (Est. 1 hour)
 
 **Task 2.1: Create db.py Module**
+
 - [ ] Implement `init_db()` function
 - [ ] Create tables (topics, progress, review_log)
 - [ ] Add `import_topics_from_json()` function
 - [ ] Implement CRUD operations
 
 **Acceptance Criteria:**
+
 ```python
 # Functions to implement:
 def init_db(db_path="data/study_tracker.db") -> sqlite3.Connection
@@ -360,6 +390,7 @@ def get_statistics(conn) -> dict
 ```
 
 **Parameterized Query Requirements:**
+
 ```python
 # ALL database operations MUST use parameterized queries
 def mark_topic_complete(conn, topic_id: int) -> bool:
@@ -381,6 +412,7 @@ def get_topics_due_for_review(conn, date: str) -> list:
 ```
 
 **Task 2.2: Data Import Logic**
+
 - [ ] Parse conteudo.json structure (ARRAY of section objects)
 - [ ] Map sections → "secao" field (iterate over array)
 - [ ] Map subsections → "subsecao" field
@@ -388,6 +420,7 @@ def get_topics_due_for_review(conn, date: str) -> list:
 - [ ] Handle duplicates gracefully (INSERT OR IGNORE)
 
 **Array Iteration Pattern:**
+
 ```python
 def import_topics_from_json(conn, json_path="conteudo.json") -> int:
     with open(json_path, 'r', encoding='utf-8') as f:
@@ -412,6 +445,7 @@ def import_topics_from_json(conn, json_path="conteudo.json") -> int:
 ```
 
 **Acceptance Criteria:**
+
 ```python
 # Test import
 conn = init_db()
@@ -424,6 +458,7 @@ assert count == 345  # All topics imported
 ### Phase 3: Utilities (Est. 30 min)
 
 **Task 3.1: Create utils.py Module**
+
 - [ ] `load_content()` - Load and validate conteudo.json
 - [ ] `calculate_next_review(current_interval, success)` - SRS algorithm
 - [ ] `format_date(date_str)` - Portuguese date formatting
@@ -431,6 +466,7 @@ assert count == 345  # All topics imported
 - [ ] `get_section_progress(conn)` - Progress by section
 
 **Spaced Repetition Algorithm:**
+
 ```python
 INTERVALS = [1, 7, 15, 30]  # days
 def calculate_next_review(current_level: int, success: bool) -> int:
@@ -447,6 +483,7 @@ def calculate_next_review(current_level: int, success: bool) -> int:
 ### Phase 4: Main Application (Est. 1 hour)
 
 **Task 4.1: Create app.py**
+
 - [ ] Initialize Streamlit page config
 - [ ] Set up session state for database connection (cached)
 - [ ] Create main page layout
@@ -454,6 +491,7 @@ def calculate_next_review(current_level: int, success: bool) -> int:
 - [ ] Add quick actions
 
 **Session State Caching Pattern (MANDATORY):**
+
 ```python
 # At top of app.py
 def get_db():
@@ -466,6 +504,7 @@ conn = get_db()
 ```
 
 **Main Page Layout:**
+
 ```
 ┌────────────────────────────────────────┐
 │  GayATCU - Dashboard de Estudos TCU    │
@@ -490,6 +529,7 @@ conn = get_db()
 ### Phase 5: Checklist Page (Est. 1 hour)
 
 **Task 5.1: Create pages/1_📋_Checklist.py**
+
 - [ ] Load content from conteudo.json
 - [ ] Display sections and subsections in expandable sections
 - [ ] Show checkboxes for each topic
@@ -498,6 +538,7 @@ conn = get_db()
 - [ ] Show completion percentage per subsection
 
 **UI Structure:**
+
 ```python
 for secao in content:
     with st.expander(f"{secao['titulo']}"):
@@ -515,6 +556,7 @@ for secao in content:
 ### Phase 6: Reviews Page (Est. 1.5 hours)
 
 **Task 6.1: Create pages/2_📅_Revisões.py**
+
 - [ ] Load topics due for review today
 - [ ] Show review queue grouped by interval type
 - [ ] Implement "Mark Review Complete" button
@@ -522,6 +564,7 @@ for secao in content:
 - [ ] Show upcoming reviews calendar view
 
 **Review Queue Logic:**
+
 ```python
 # Get topics due today
 due_topics = get_topics_due_for_review(conn, datetime.now().date())
@@ -542,6 +585,7 @@ for topic in due_topics:
 ### Phase 7: Statistics Page (Est. 1.5 hours)
 
 **Task 7.1: Create pages/3_📊_Estatísticas.py**
+
 - [ ] Overall completion rate donut chart
 - [ ] Progress by section bar chart
 - [ ] Review schedule timeline
@@ -549,6 +593,7 @@ for topic in due_topics:
 - [ ] Export data to CSV button
 
 **Charts Required:**
+
 1. Overall Progress (donut chart)
 2. Completion by Section (grouped bar chart)
 3. Reviews per Week (line chart)
@@ -559,6 +604,7 @@ for topic in due_topics:
 ### Phase 8: Testing & Documentation (Est. 1 hour)
 
 **Task 8.1: Local Testing**
+
 - [ ] Test database initialization
 - [ ] Test all 345 topics load correctly
 - [ ] Test checkbox functionality
@@ -567,12 +613,14 @@ for topic in due_topics:
 - [ ] Test mobile responsiveness
 
 **Task 8.2: Create README.md**
+
 - [ ] Project description
 - [ ] Installation instructions
 - [ ] Usage guide
 - [ ] Deployment instructions
 
 **Task 8.3: Deployment Preparation**
+
 - [ ] Create `deploy.sh` script for Streamlit Cloud
 - [ ] Add `.streamlit/credentials.toml` template
 - [ ] Document environment variables
@@ -582,6 +630,7 @@ for topic in due_topics:
 ## Integration with Existing conteudo.json
 
 ### Data Loading Process
+
 ```python
 def load_and_import_content():
     """Load conteudo.json and import into database"""
@@ -594,15 +643,16 @@ def load_and_import_content():
 ```
 
 ### Content Mapping
-| JSON Field | Database Field | Notes |
-|------------|----------------|-------|
-| sections[i].titulo | secao | Main section (iterate over array) |
-| sections[i].subsecoes[j].titulo | subsecao | Subsection/Discipline |
-| sections[i].subsecoes[j].topicos[k].codigo | codigo | Topic ID |
-| sections[i].subsecoes[j].topicos[k].titulo | titulo | Topic title |
-| sections[i].subsecoes[j].topicos[k].aulas_direcao | - | Not used currently |
-| sections[i].subsecoes[j].topicos[k].questoes | - | Not used currently |
-| sections[i].subsecoes[j].topicos[k].revisao | - | Not used currently |
+
+| JSON Field                                        | Database Field | Notes                             |
+| ------------------------------------------------- | -------------- | --------------------------------- |
+| sections[i].titulo                                | secao          | Main section (iterate over array) |
+| sections[i].subsecoes[j].titulo                   | subsecao       | Subsection/Discipline             |
+| sections[i].subsecoes[j].topicos[k].codigo        | codigo         | Topic ID                          |
+| sections[i].subsecoes[j].topicos[k].titulo        | titulo         | Topic title                       |
+| sections[i].subsecoes[j].topicos[k].aulas_direcao | -              | Not used currently                |
+| sections[i].subsecoes[j].topicos[k].questoes      | -              | Not used currently                |
+| sections[i].subsecoes[j].topicos[k].revisao       | -              | Not used currently                |
 
 **Key Point:** `conteudo.json` is an array `[{...}, {...}]`, not a single object. Code must iterate over the array.
 
@@ -611,6 +661,7 @@ def load_and_import_content():
 ## Testing Strategy
 
 ### Unit Tests (Manual)
+
 1. **Database Tests**
    - [ ] Verify all 345 topics import correctly
    - [ ] Test duplicate handling
@@ -627,6 +678,7 @@ def load_and_import_content():
    - [ ] Verify statistics calculations
 
 ### Integration Tests
+
 1. **End-to-End Workflow**
    - [ ] Complete first topic → Verify shows in reviews tomorrow
    - [ ] Complete review → Verify interval increases
@@ -637,6 +689,7 @@ def load_and_import_content():
 ## Deployment Guide
 
 ### Local Development (Recommended)
+
 ```bash
 # Activate virtual environment
 source .venv/bin/activate
@@ -649,31 +702,38 @@ streamlit run app.py
 ```
 
 **Why Local-Only:**
+
 - SQLite database persists on local filesystem
 - No data loss on application restart
 - Privacy - study data stays on your machine
 - No cloud database costs or complexity
 
 ### Streamlit Cloud Deployment (NOT SUPPORTED)
+
 **DO NOT deploy to Streamlit Cloud** with this architecture:
+
 - Cloud deployment loses SQLite data on each redeploy
 - Single SQLite file is not suitable for cloud hosting
 - Would require migration to PostgreSQL/MySQL
 
 **If cloud deployment is needed in the future:**
+
 1. Replace SQLite with `st.connection()` to PostgreSQL
 2. Add user authentication
 3. Implement multi-user session management
 4. Redesign database schema for multiple users
 
 ### Environment Variables (Optional)
+
 ```
 DB_PATH=data/study_tracker.db
 CONTENT_PATH=conteudo.json
 ```
 
 ### Backup Strategy
+
 Users should regularly backup:
+
 1. `data/study_tracker.db` - Main database
 2. Use export button in Statistics page (Phase 7) for CSV backup
 
@@ -681,20 +741,20 @@ Users should regularly backup:
 
 ## Success Criteria Validation
 
-| Criterion | How to Verify |
-|-----------|---------------|
-| All 345 topics load | Check statistics page shows 345 total |
-| Mark topics complete | Use checklist page, verify checkbox persists |
-| Review system works | Complete topic, verify appears in reviews next day |
-| Statistics accurate | Cross-check manual count with dashboard stats |
-| Data persists | Close app, reopen, verify progress saved |
-| Deployment ready | Can run `streamlit run app.py` without errors |
+| Criterion            | How to Verify                                      |
+| -------------------- | -------------------------------------------------- |
+| All 345 topics load  | Check statistics page shows 345 total              |
+| Mark topics complete | Use checklist page, verify checkbox persists       |
+| Review system works  | Complete topic, verify appears in reviews next day |
+| Statistics accurate  | Cross-check manual count with dashboard stats      |
+| Data persists        | Close app, reopen, verify progress saved           |
+| Deployment ready     | Can run `streamlit run app.py` without errors      |
 
 ---
 
 ## Open Questions
 
-*All critical architectural decisions have been resolved. The following are optional enhancements for future consideration:*
+_All critical architectural decisions have been resolved. The following are optional enhancements for future consideration:_
 
 1. **Cloud Migration** — If cloud deployment becomes a requirement, redesign with PostgreSQL and multi-user support
 2. **Enhanced Authentication** — Currently single-user local app; add auth if sharing is needed
@@ -705,6 +765,7 @@ Users should regularly backup:
 ## Next Steps
 
 Once this plan is approved:
+
 1. Create the directory structure
 2. Implement Phase 2 (Database Layer) first as it's the foundation
 3. Build out each phase sequentially
@@ -713,7 +774,7 @@ Once this plan is approved:
 
 ---
 
-**Plan Created:** 2025-03-08
-**Last Revised:** 2025-03-08 (Architect Feedback Incorporated)
+**Plan Created:** 2026-03-08
+**Last Revised:** 2026-03-08 (Architect Feedback Incorporated)
 **Estimated Total Time:** 8 hours
 **Status:** Revised - Ready for Implementation

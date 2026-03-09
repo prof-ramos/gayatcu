@@ -1,6 +1,7 @@
 # Relatório de Qualidade do Código - GayATCU
 
 ## Data: 2026-03-08
+
 ## Status: ✅ BOM COM MELHORIAS SUGERIDAS
 
 ---
@@ -10,6 +11,7 @@
 ### ✅ BOAS PRÁTICAS
 
 #### Módulos e Pacotes
+
 ```python
 ✓ session.py       # Nome curto e descritivo
 ✓ db.py           # Abrangência clara (database)
@@ -17,6 +19,7 @@
 ```
 
 #### Funções
+
 ```python
 ✓ get_db()                    # Verbo + substantivo, claro
 ✓ initialize_database()       # Descritivo, indica ação
@@ -25,6 +28,7 @@
 ```
 
 #### Variáveis
+
 ```python
 ✓ conn              # Abreviação comum para connection
 ✓ topic_id          # snake_case, descritivo
@@ -35,6 +39,7 @@
 ### ⚠️ PROBLEMAS ENCONTRADOS
 
 #### 1. Nomes Genéricos ou Ambíguos
+
 ```python
 ❌ # Em get_db_connection()
 conn = sqlite3.connect(...)
@@ -47,6 +52,7 @@ if 'db_connection' not in st.session_state:
 ```
 
 **SUGESTÃO:**
+
 ```python
 ✅ # Melhor - mais específico
 if 'cached_db_connection' not in st.session_state:
@@ -55,6 +61,7 @@ return st.session_state.cached_db_connection
 ```
 
 #### 2. Inconsistência de Nomenclatura
+
 ```python
 ❌ # db.py usa "conn" (abreviado)
 conn = sqlite3.connect(...)
@@ -67,12 +74,13 @@ db = get_db()
 ```
 
 **SUGESTÃO:**
+
 ```python
 ✅ # Seja consistente - escolha UM padrão
 # Opção 1: Sempre "conn"
 conn = get_db()
 
-# Opção 2: Sempre "db_connection"  
+# Opção 2: Sempre "db_connection"
 db_connection = get_db()
 
 # Opção 3: Sempre "db"
@@ -86,6 +94,7 @@ db = get_db()
 ### ✅ BOAS PRÁTICAS
 
 #### Estrutura de Módulos
+
 ```python
 ✓ session.py
   ├── Imports (organizados por tipo)
@@ -101,6 +110,7 @@ db = get_db()
 ```
 
 #### Separação de Responsabilidades
+
 ```python
 ✓ session.py    # Gerenciamento de conexão
 ✓ db.py        # Operações de banco de dados
@@ -111,6 +121,7 @@ db = get_db()
 ### ⚠️ PROBLEMAS ENCONTRADOS
 
 #### 1. Acoplamento entre session.py e db.py
+
 ```python
 ❌ # session.py importa db.init_db
 from db import init_db
@@ -125,6 +136,7 @@ def initialize_database() -> bool:
 **PROBLEMA:** session.py deveria ser independente de db.py
 
 **SUGESTÃO:**
+
 ```python
 ✅ # session.py - gerenciar apenas conexões
 def get_db() -> sqlite3.Connection:
@@ -139,6 +151,7 @@ def init_and_import_if_needed() -> bool:
 ```
 
 #### 2. Funções Muito Longas
+
 ```python
 ❌ # pages/1_📋_Checklist.py - main() tem ~100 linhas
 def main():
@@ -147,6 +160,7 @@ def main():
 ```
 
 **SUGESTÃO:**
+
 ```python
 ✅ # Dividir em funções menores
 def render_section(section, progress_data):
@@ -169,6 +183,7 @@ def main():
 ```
 
 #### 3. Falta de Estrutura de Classe
+
 ```python
 ❌ # Código procedural em todos os arquivos
 def get_db():
@@ -182,18 +197,19 @@ def mark_topic_complete():
 ```
 
 **SUGESTÃO:**
+
 ```python
 ✅ # Usar classes para organizar código relacionado
 class DatabaseManager:
     def __init__(self, db_path: str):
         self.db_path = db_path
-        
+
     def get_connection(self) -> sqlite3.Connection:
         ...
-        
+
     def initialize(self) -> bool:
         ...
-        
+
     def import_topics(self, json_path: str) -> int:
         ...
 
@@ -209,6 +225,7 @@ conn = db_manager.get_connection()
 ### ✅ BOAS PRÁTICAS
 
 #### Captura Específica de Exceções
+
 ```python
 ✓ # session.py
 except sqlite3.Error as e:
@@ -224,6 +241,7 @@ except sqlite3.Error as e:
 ```
 
 #### Mensagens de Erro em Português
+
 ```python
 ✓ st.error("Erro ao conectar ao banco de dados: {e}")
 ✓ st.error("Arquivo conteudo.json não encontrado. Execute a importação primeiro.")
@@ -232,6 +250,7 @@ except sqlite3.Error as e:
 ### ⚠️ PROBLEMAS ENCONTRADOS
 
 #### 1. Exceções Genéricas Demais
+
 ```python
 ❌ # session.py
 except Exception as e:  # MUITO genérico
@@ -243,18 +262,19 @@ except Exception as e:  # MUITO genérico
 **PROBLEMA:** Captura TUDO, inclusive exceções que não deveria
 
 **SUGESTÃO:**
+
 ```python
 ✅ # Seja específico
 except sqlite3.OperationalError as e:
     logger.error(f"Database operational error: {e}")
     st.error(f"Erro operacional no banco: {e}")
     return get_db_connection()
-    
+
 except sqlite3.DatabaseError as e:
     logger.error(f"Database error: {e}")
     st.error(f"Erro no banco de dados: {e}")
     raise
-    
+
 except (OSError, IOError) as e:
     logger.error(f"File system error: {e}")
     st.error(f"Erro ao acessar arquivo: {e}")
@@ -262,6 +282,7 @@ except (OSError, IOError) as e:
 ```
 
 #### 2. Falta de Validação de Dados
+
 ```python
 ❌ # utils.py - load_content()
 def load_content(json_path: str = "conteudo.json"):
@@ -272,6 +293,7 @@ def load_content(json_path: str = "conteudo.json"):
 ```
 
 **SUGESTÃO:**
+
 ```python
 ✅ # Valida dados antes de retornar
 def load_content(json_path: str = "conteudo.json") -> Dict[str, Any]:
@@ -279,29 +301,30 @@ def load_content(json_path: str = "conteudo.json") -> Dict[str, Any]:
     try:
         with open(json_path, 'r', encoding='utf-8') as f:
             content = json.load(f)
-        
+
         # Validação básica
         if not isinstance(content, list):
             raise ValueError("Expected JSON array, got {type(content)}")
-            
+
         if len(content) == 0:
             logger.warning("Empty JSON file")
-            
+
         # Valida estrutura
         for section in content:
             if not isinstance(section, dict):
                 raise ValueError("Expected section to be dict")
             if 'titulo' not in section:
                 raise ValueError("Section missing 'titulo' field")
-                
+
         return content
-        
+
     except json.JSONDecodeError as e:
         logger.error(f"Invalid JSON: {e}")
         raise ValueError(f"Arquivo JSON inválido: {e}")
 ```
 
 #### 3. Falta de Tratamento de Erros em UI
+
 ```python
 ❌ # pages/1_📋_Checklist.py
 progress_data = get_all_progress(conn)  # ❌ Não trata erro
@@ -310,6 +333,7 @@ progress_data = get_all_progress(conn)  # ❌ Não trata erro
 ```
 
 **SUGESTÃO:**
+
 ```python
 ✅ # Trata erros de forma elegante
 try:
@@ -327,6 +351,7 @@ except sqlite3.Error as e:
 ### ✅ BOAS PRÁTICAS
 
 #### Docstrings Completas
+
 ```python
 ✓ # session.py
 def get_db() -> sqlite3.Connection:
@@ -343,6 +368,7 @@ def get_db() -> sqlite3.Connection:
 ```
 
 #### Comentários Informativos
+
 ```python
 ✓ # db.py
 # Use parameterized query to prevent SQL injection
@@ -355,6 +381,7 @@ cursor.execute("""
 ### ⚠️ PROBLEMAS ENCONTRADOS
 
 #### 1. Comentários Óbvios/Redundantes
+
 ```python
 ❌ # Isso NÃO adiciona valor
 conn = sqlite3.connect("data/study_tracker.db")  # Connect to database
@@ -368,6 +395,7 @@ for section in content:  # Loop through sections
 ```
 
 **SUGESTÃO:**
+
 ```python
 ✅ # Remova comentários óbvios
 conn = sqlite3.connect("data/study_tracker.db")
@@ -379,6 +407,7 @@ conn = sqlite3.connect("data/study_tracker.db", check_same_thread=False)
 ```
 
 #### 2. Falta de Comentários em Lógica Complexa
+
 ```python
 ❌ # pages/2_📅_Revisoes.py
 def group_by_interval(topics: list) -> dict:
@@ -388,12 +417,13 @@ def group_by_interval(topics: list) -> dict:
 ```
 
 **SUGESTÃO:**
+
 ```python
 ✅ # Explique o PORQUÊ, não apenas o O QUÊ
 def group_by_interval(topics: list) -> dict:
     """
     Group topics by their next review interval for display organization.
-    
+
     This creates a dictionary where keys are interval labels (24h, 7d, etc.)
     and values are lists of topics due for review in that interval.
     Topics with no next_review_date are placed in 'Sem data' category.
@@ -404,15 +434,16 @@ def group_by_interval(topics: list) -> dict:
 ```
 
 #### 3. Inconsistência no Estilo de Docstring
+
 ```python
 ❌ # Alguns usam Google Style
 def mark_topic_complete(conn, topic_id):
     """Mark a topic as completed.
-    
+
     Args:
         conn: Database connection
         topic_id: Topic ID
-        
+
     Returns:
         bool: Success status
     """
@@ -423,6 +454,7 @@ def get_all_progress(conn):
 ```
 
 **SUGESTÃO:**
+
 ```python
 ✅ # Seja consistente - escolha UM estilo
 # Recomendação: Google Style (mais legível)
@@ -452,12 +484,13 @@ def mark_topic_complete(conn: sqlite3.Connection, topic_id: int) -> bool:
 ### ✅ BOAS PRÁTICAS
 
 #### Type Hints (Uso Parcial)
+
 ```python
 ✓ # session.py
 def get_db_connection() -> sqlite3.Connection:
     ...
 
-✓ # db.py  
+✓ # db.py
 def get_statistics(conn: sqlite3.Connection) -> Dict[str, Any]:
     ...
 ```
@@ -465,6 +498,7 @@ def get_statistics(conn: sqlite3.Connection) -> Dict[str, Any]:
 ### ⚠️ PROBLEMAS ENCONTRADOS
 
 #### 1. Type Hints Incompletos
+
 ```python
 ❌ # Muitas funções sem type hints
 def load_content(json_path: str = "conteudo.json"):  # ❌ Sem return type
@@ -475,6 +509,7 @@ def get_db():  # ❌ Sem return type (embora óbvio)
 ```
 
 **SUGESTÃO:**
+
 ```python
 ✅ # Adicione type hints em todas as funções
 def load_content(json_path: str = "conteudo.json") -> Dict[str, Any]:
@@ -484,13 +519,14 @@ def get_db() -> sqlite3.Connection:
     ...
 
 def mark_topic_complete(
-    conn: sqlite3.Connection, 
+    conn: sqlite3.Connection,
     topic_id: int
 ) -> bool:
     ...
 ```
 
 #### 2. Constantes Não Definidas
+
 ```python
 ❌ # Magic numbers espalhados pelo código
 if total == 0:  # ❌ O que é 0?
@@ -500,6 +536,7 @@ percentage = (completed / total) * 100.0  # ❌ Por que 100.0?
 ```
 
 **SUGESTÃO:**
+
 ```python
 ✅ # Defina constantes
 MINIMUM_TOPICS_COUNT = 0
@@ -526,7 +563,7 @@ percentage = (completed / total) * PERCENTAGE_MULTIPLIER
    - Facilita debugging
 
 3. **Adicionar tratamento de erros nas páginas**
-   - Evita que整个 UI quebre
+   - Evita que toda a interface do usuário quebre
    - Melhor experiência do usuário
 
 ### 🟡 MÉDIA PRIORIDADE (Qualidade e Manutenibilidade)
@@ -561,6 +598,7 @@ percentage = (completed / total) * PERCENTAGE_MULTIPLIER
 ## 7. EXEMPLO DE REFACTORING
 
 ### Antes (Código Atual)
+
 ```python
 def get_db():
     """Get or create cached database connection."""
@@ -575,17 +613,18 @@ def get_db():
 ```
 
 ### Depois (Refatorado)
+
 ```python
 def get_db() -> sqlite3.Connection:
     """Get cached database connection from session state.
-    
+
     Returns a cached connection if available in the current session,
     otherwise creates a new connection. Uses session state to
     avoid creating multiple connections per script run.
-    
+
     Returns:
         Active database connection with row factory enabled
-        
+
     Raises:
         sqlite3.OperationalError: If database file cannot be accessed
         sqlite3.DatabaseError: If database is corrupted
@@ -594,12 +633,12 @@ def get_db() -> sqlite3.Connection:
         if CACHED_DB_KEY not in st.session_state:
             st.session_state[CACHED_DB_KEY] = _create_db_connection()
         return st.session_state[CACHED_DB_KEY]
-        
+
     except sqlite3.OperationalError as e:
         logger.error(f"Database access error: {e}")
         st.error(f"Erro ao acessar banco de dados: {e}")
         raise
-        
+
     except sqlite3.DatabaseError as e:
         logger.error(f"Database corruption: {e}")
         st.error(f"Erro no banco de dados: {e}")
@@ -621,12 +660,15 @@ def _create_db_connection() -> sqlite3.Connection:
 ## 8. CONCLUSÃO
 
 ### Resumo Geral
+
 ✅ **Código funcional e bem estruturado**
+
 - Boa separação de responsabilidades
 - Docstrings presentes em funções principais
 - Tratamento de erros básico implementado
 
 ⚠️ **Áreas que precisam de atenção**
+
 - Type hints incompletos
 - Exceções muito genéricas
 - Falta de validação de dados
@@ -638,6 +680,7 @@ def _create_db_connection() -> sqlite3.Connection:
 **Pontos Fracos:** Validação, tratamento de erros específicos, type hints
 
 ### Próximos Passos Recomendados
+
 1. Implementar validação de dados em `load_content()`
 2. Adicionar type hints completos em todas as funções
 3. Refatorar tratamento de exceções para ser mais específico
@@ -646,4 +689,4 @@ def _create_db_connection() -> sqlite3.Connection:
 
 ---
 
-*Relatório gerado automaticamente em 2026-03-08*
+_Relatório gerado automaticamente em 2026-03-08_

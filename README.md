@@ -15,7 +15,8 @@ Dashboard profissional para acompanhamento de estudos do concurso TCU 2021 com s
 ### 1. Iniciar o Dashboard
 
 ```bash
-cd /Users/gabrielramos/gayatcu
+# Navegue até o diretório onde o projeto foi clonado
+cd <seu-diretorio-de-clone>
 streamlit run app.py
 ```
 
@@ -30,21 +31,25 @@ O dashboard abrirá automaticamente em: http://localhost:8501
 ### 3. Páginas Disponíveis
 
 #### 🏠 Dashboard Principal
+
 - Visão geral do progresso
 - Métricas por seção
 - Barras de progresso
 
 #### 📋 Checklist
+
 - Marque tópicos como estudados
 - Acompanhe conclusão por disciplina
 - Filtre por seção/disciplina
 
 #### 📅 Revisões
+
 - Fila de tópicos para revisar hoje
 - Marque revisões como concluídas
 - Veja próximas revisões no calendário
 
 #### 📊 Estatísticas
+
 - Gráficos de progresso
 - Distribuição por seção
 - Exporte dados para CSV
@@ -60,7 +65,14 @@ O dashboard abrirá automaticamente em: http://localhost:8501
 - **Streamlit 1.28+**: Framework web
 - **SQLite**: Banco de dados
 - **Plotly**: Gráficos interativos
-- **Python 3.13**: Linguagem
+- **Python 3.10+**: Linguagem (testado com 3.13)
+
+## 📦 Instalação
+
+```bash
+# Certifique-se de estar no diretório do projeto clonado
+pip install -r requirements.txt
+```
 
 ## 🎓 Sistema de Repetição Espaçada
 
@@ -77,8 +89,23 @@ Se você errar uma revisão, o ciclo reinicia para 24h.
 
 Seus dados ficam em `data/study_tracker.db`. Para backup:
 
+**Linux / macOS (Bash):**
+
 ```bash
 cp data/study_tracker.db data/study_tracker_backup_$(date +%Y%m%d).db
+```
+
+**Windows (PowerShell):**
+
+```powershell
+Copy-Item data/study_tracker.db "data/study_tracker_backup_$(Get-Date -Format 'yyyyMMdd').db"
+```
+
+**Windows (CMD):**
+_(O CMD não possui formatação de data nativa simples, use cópia manual)_
+
+```cmd
+copy data\study_tracker.db data\study_tracker_backup_manual.db
 ```
 
 Ou use a exportação na página de Estatísticas.
