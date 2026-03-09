@@ -15,6 +15,11 @@ from utils import load_content
 st.set_page_config(page_title="Checklist", page_icon="📋", layout="wide")
 
 
+def build_topic_lookup_key(codigo: str, secao: str, subsecao: str) -> tuple[str, str, str]:
+    """Build normalized natural key for topic lookup."""
+    return (str(codigo).strip(), str(secao).strip(), str(subsecao).strip())
+
+
 @st.dialog("Confirmar Conclusão")
 def confirm_completion(topic_title: str, topic_id: int):
     """Exibir diálogo de confirmação antes de marcar como concluído."""
@@ -86,9 +91,10 @@ def main():
     completion_status = {p["id"]: p["completed_at"] is not None for p in progress_data}
 
     # Create lookup dictionary for O(1) topic ID search (fixes N+1 query problem)
-    # Key: (codigo, secao, subsecao, titulo) -> Value: topic_id
+    # Key: (codigo, secao, subsecao) -> Value: topic_id
+    # Uses natural key to avoid title mismatch issues in legacy data.
     progress_lookup = {
-        (p["codigo"], p["secao"], p["subsecao"], p["titulo"]): p["id"]
+        build_topic_lookup_key(p["codigo"], p["secao"], p["subsecao"]): p["id"]
         for p in progress_data
     }
 
@@ -124,11 +130,10 @@ def main():
                 # Display topics with checkboxes
                 for topic_idx, topic in enumerate(subsection.get("topicos", [])):
                     # Find the topic ID using O(1) lookup (fixes N+1 query problem)
-                    lookup_key = (
-                        topic["codigo"],
-                        section["titulo"],
+                    lookup_key = build_topic_lookup_key(
+                        topic.get("codigo", ""),
+                        section.get("titulo", ""),
                         subsection_title,
-                        topic["titulo"],
                     )
                     topic_id = progress_lookup.get(lookup_key)
 
@@ -151,7 +156,10 @@ def main():
                     # Display checkbox with topic title
                     col_check, col_text = st.columns([1, 12])
                     with col_check:
-                        checkbox_label = topic["titulo"] or f"Tópico {topic['codigo']}"
+                        checkbox_label = (
+                            str(topic.get("titulo", "")).strip()
+                            or f"Tópico {topic.get('codigo', '')}"
+                        )
                         new_state = st.checkbox(
                             checkbox_label,
                             value=is_completed,

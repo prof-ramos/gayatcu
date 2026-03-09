@@ -9,3 +9,6 @@ data/*.db
 .omc/state/
 .omc/project-memory.json
 .omc/sessions/
+
+# Streamlit local secrets
+.streamlit/secrets.toml

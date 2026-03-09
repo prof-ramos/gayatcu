@@ -5,13 +5,29 @@ Refactored to use SQLModel ORM.
 """
 
 import json
+import logging
 import os
 from datetime import datetime, timedelta
 from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 import streamlit as st
 from sqlalchemy import Engine, UniqueConstraint, case, func
 from sqlmodel import Field, Session, SQLModel, create_engine, select
+
+logger = logging.getLogger(__name__)
+
+_BACKUP_SCHEMA_VERSION = 1
+_BACKUP_REQUEST_TIMEOUT_SECONDS = 15
+_VALID_BACKUP_PUT_METHODS = {"PUT", "POST"}
+_DEFAULT_SQLITE_PATH = "data/study_tracker.db"
+_DB_URL_ENV_KEYS = (
+    "DATABASE_URL",
+    "POSTGRES_URL_NON_POOLING",
+    "POSTGRES_URL",
+    "POSTGRES_PRISMA_URL",
+)
 
 # --- Models ---
 
@@ -52,20 +68,439 @@ class ReviewLog(SQLModel, table=True):
 # --- Engine ---
 
 
-def init_db(db_path: str = "data/study_tracker.db") -> Engine:
+def _normalize_sqlalchemy_url(url: str) -> str:
     """
-    Initialize the SQLite database with required tables and indexes.
-    Returns the SQLAlchemy engine.
+    Normalize DB URL to an explicit SQLAlchemy-compatible format.
     """
-    db_dir = os.path.dirname(db_path)
+    normalized = url.strip()
+    if normalized.startswith("postgres://"):
+        # Compatibility with legacy postgres:// URLs
+        return normalized.replace("postgres://", "postgresql+psycopg://", 1)
+    if normalized.startswith("postgresql://"):
+        return normalized.replace("postgresql://", "postgresql+psycopg://", 1)
+    return normalized
+
+
+def _get_configured_database_url() -> str | None:
+    """
+    Read database URL from Streamlit secrets or environment variables.
+    """
+    try:
+        secrets = st.secrets
+    except Exception:
+        secrets = None
+
+    if secrets is not None:
+        db_cfg = _safe_mapping_get(secrets, "database", {})
+        secret_url = _safe_mapping_get(db_cfg, "url") or _safe_mapping_get(
+            secrets, "DATABASE_URL"
+        )
+        if secret_url:
+            return _normalize_sqlalchemy_url(str(secret_url))
+
+    for key in _DB_URL_ENV_KEYS:
+        value = os.getenv(key)
+        if value:
+            return _normalize_sqlalchemy_url(value)
+
+    return None
+
+
+def _resolve_database_target(db_path: str | None = None) -> tuple[str, bool]:
+    """
+    Resolve database target URL and whether it points to SQLite.
+    """
+    if db_path:
+        # Explicit URL override (e.g. tests/local scripts)
+        if "://" in db_path:
+            url = _normalize_sqlalchemy_url(db_path)
+            return url, url.startswith("sqlite:///")
+
+        sqlite_path = db_path
+    else:
+        configured_url = _get_configured_database_url()
+        if configured_url:
+            return configured_url, configured_url.startswith("sqlite:///")
+        sqlite_path = _DEFAULT_SQLITE_PATH
+
+    db_dir = os.path.dirname(sqlite_path)
     if db_dir:
         os.makedirs(db_dir, exist_ok=True)
+    return f"sqlite:///{sqlite_path}", True
 
-    sqlite_url = f"sqlite:///{db_path}"
-    engine = create_engine(sqlite_url, connect_args={"check_same_thread": False})
+
+def init_db(db_path: str | None = None) -> Engine:
+    """
+    Initialize database engine with required tables and indexes.
+
+    Priority:
+    1) Explicit URL/path passed in `db_path`
+    2) Secrets/env (PostgreSQL/Supabase)
+    3) Local SQLite fallback
+
+    Returns the SQLAlchemy engine.
+    """
+    db_url, is_sqlite = _resolve_database_target(db_path)
+    if is_sqlite:
+        engine = create_engine(db_url, connect_args={"check_same_thread": False})
+    else:
+        engine = create_engine(
+            db_url,
+            pool_pre_ping=True,
+            connect_args={"prepare_threshold": None},
+        )
 
     SQLModel.metadata.create_all(engine)
     return engine
+
+
+def _safe_mapping_get(container: Any, key: str, default: Any = None) -> Any:
+    """
+    Safely get a value from mapping-like objects (dict or Streamlit AttrDict).
+    """
+    if container is None:
+        return default
+
+    try:
+        return container.get(key, default)
+    except Exception:
+        pass
+
+    try:
+        return container[key]
+    except Exception:
+        return default
+
+
+def _get_remote_backup_config() -> dict[str, str | None]:
+    """
+    Read remote JSON backup configuration from Streamlit secrets.
+
+    Supported keys:
+      - [backup].json_get_url / BACKUP_JSON_GET_URL
+      - [backup].json_put_url / BACKUP_JSON_PUT_URL
+      - [backup].json_put_method / BACKUP_JSON_PUT_METHOD (PUT|POST)
+    """
+    config = {"get_url": None, "put_url": None, "put_method": "PUT"}
+
+    try:
+        secrets = st.secrets
+    except Exception:
+        return config
+
+    backup_cfg = _safe_mapping_get(secrets, "backup", {})
+    get_url = _safe_mapping_get(backup_cfg, "json_get_url") or _safe_mapping_get(
+        secrets, "BACKUP_JSON_GET_URL"
+    )
+    put_url = _safe_mapping_get(backup_cfg, "json_put_url") or _safe_mapping_get(
+        secrets, "BACKUP_JSON_PUT_URL"
+    )
+    put_method_raw = _safe_mapping_get(
+        backup_cfg, "json_put_method", _safe_mapping_get(secrets, "BACKUP_JSON_PUT_METHOD", "PUT")
+    )
+
+    put_method = str(put_method_raw or "PUT").strip().upper()
+    if put_method not in _VALID_BACKUP_PUT_METHODS:
+        put_method = "PUT"
+
+    config["get_url"] = str(get_url).strip() if get_url else None
+    config["put_url"] = str(put_url).strip() if put_url else None
+    config["put_method"] = put_method
+    return config
+
+
+def _normalize_topic_key(raw_data: dict[str, Any]) -> tuple[str, str, str] | None:
+    """
+    Build the natural topic key (codigo, secao, subsecao) from raw payload.
+    """
+    codigo = str(raw_data.get("codigo", "")).strip()
+    secao = str(raw_data.get("secao", "")).strip()
+    subsecao = str(raw_data.get("subsecao", "")).strip()
+
+    if not codigo or not secao or not subsecao:
+        return None
+    return (codigo, secao, subsecao)
+
+
+def _optional_str(value: Any) -> str | None:
+    """
+    Normalize optional string values for snapshot import.
+    """
+    if value is None:
+        return None
+    string_value = str(value).strip()
+    return string_value or None
+
+
+def export_snapshot_to_dict(engine: Engine) -> dict[str, Any]:
+    """
+    Export the full database state as a JSON-serializable snapshot dict.
+    """
+    with Session(engine) as session:
+        topics = session.exec(
+            select(Topic).order_by(Topic.secao, Topic.subsecao, Topic.codigo)
+        ).all()
+        progress_rows = session.exec(
+            select(Topic, Progress)
+            .join(Progress, Topic.id == Progress.topic_id)
+            .order_by(Topic.secao, Topic.subsecao, Topic.codigo)
+        ).all()
+        review_rows = session.exec(
+            select(Topic, ReviewLog)
+            .join(ReviewLog, Topic.id == ReviewLog.topic_id)
+            .order_by(ReviewLog.reviewed_at, Topic.secao, Topic.subsecao, Topic.codigo)
+        ).all()
+
+    return {
+        "version": _BACKUP_SCHEMA_VERSION,
+        "exported_at": datetime.now().isoformat(),
+        "topics": [
+            {
+                "codigo": topic.codigo,
+                "secao": topic.secao,
+                "subsecao": topic.subsecao,
+                "titulo": topic.titulo,
+            }
+            for topic in topics
+        ],
+        "progress": [
+            {
+                "codigo": topic.codigo,
+                "secao": topic.secao,
+                "subsecao": topic.subsecao,
+                "completed_at": progress.completed_at,
+                "last_reviewed_at": progress.last_reviewed_at,
+                "review_count": progress.review_count,
+                "next_review_date": progress.next_review_date,
+            }
+            for topic, progress in progress_rows
+        ],
+        "review_log": [
+            {
+                "codigo": topic.codigo,
+                "secao": topic.secao,
+                "subsecao": topic.subsecao,
+                "reviewed_at": review.reviewed_at,
+                "interval_days": review.interval_days,
+            }
+            for topic, review in review_rows
+        ],
+    }
+
+
+def import_snapshot_from_dict(engine: Engine, snapshot: dict[str, Any]) -> dict[str, int]:
+    """
+    Import a snapshot dict into the current database (upsert by natural key).
+    """
+    topics_payload = snapshot.get("topics", [])
+    progress_payload = snapshot.get("progress", [])
+    review_payload = snapshot.get("review_log", [])
+
+    if not isinstance(topics_payload, list):
+        topics_payload = []
+    if not isinstance(progress_payload, list):
+        progress_payload = []
+    if not isinstance(review_payload, list):
+        review_payload = []
+
+    stats = {
+        "topics_created": 0,
+        "topics_updated": 0,
+        "progress_upserted": 0,
+        "review_logs_added": 0,
+    }
+
+    with Session(engine) as session:
+        existing_topics = session.exec(select(Topic)).all()
+        topic_by_key = {
+            (topic.codigo, topic.secao, topic.subsecao): topic for topic in existing_topics
+        }
+
+        for raw_topic in topics_payload:
+            if not isinstance(raw_topic, dict):
+                continue
+            topic_key = _normalize_topic_key(raw_topic)
+            if topic_key is None:
+                continue
+
+            titulo = _optional_str(raw_topic.get("titulo")) or ""
+            existing = topic_by_key.get(topic_key)
+
+            if existing is None:
+                new_topic = Topic(
+                    codigo=topic_key[0],
+                    secao=topic_key[1],
+                    subsecao=topic_key[2],
+                    titulo=titulo,
+                )
+                session.add(new_topic)
+                session.flush()
+                topic_by_key[topic_key] = new_topic
+                stats["topics_created"] += 1
+            elif titulo and existing.titulo != titulo:
+                existing.titulo = titulo
+                session.add(existing)
+                stats["topics_updated"] += 1
+
+        existing_progress = session.exec(select(Progress)).all()
+        progress_by_topic_id = {progress.topic_id: progress for progress in existing_progress}
+
+        for raw_progress in progress_payload:
+            if not isinstance(raw_progress, dict):
+                continue
+            topic_key = _normalize_topic_key(raw_progress)
+            if topic_key is None:
+                continue
+
+            topic = topic_by_key.get(topic_key)
+            if topic is None or topic.id is None:
+                continue
+
+            progress = progress_by_topic_id.get(topic.id)
+            if progress is None:
+                progress = Progress(topic_id=topic.id)
+                progress_by_topic_id[topic.id] = progress
+                session.add(progress)
+
+            progress.completed_at = _optional_str(raw_progress.get("completed_at"))
+            progress.last_reviewed_at = _optional_str(raw_progress.get("last_reviewed_at"))
+            progress.next_review_date = _optional_str(raw_progress.get("next_review_date"))
+            try:
+                progress.review_count = max(int(raw_progress.get("review_count", 0) or 0), 0)
+            except (TypeError, ValueError):
+                progress.review_count = 0
+
+            session.add(progress)
+            stats["progress_upserted"] += 1
+
+        existing_logs = session.exec(select(ReviewLog)).all()
+        existing_log_keys = {
+            (log.topic_id, log.reviewed_at, log.interval_days) for log in existing_logs
+        }
+
+        for raw_review in review_payload:
+            if not isinstance(raw_review, dict):
+                continue
+            topic_key = _normalize_topic_key(raw_review)
+            if topic_key is None:
+                continue
+
+            topic = topic_by_key.get(topic_key)
+            if topic is None or topic.id is None:
+                continue
+
+            reviewed_at = _optional_str(raw_review.get("reviewed_at"))
+            if reviewed_at is None:
+                continue
+
+            try:
+                interval_days = int(raw_review.get("interval_days", 1) or 1)
+            except (TypeError, ValueError):
+                interval_days = 1
+
+            dedupe_key = (topic.id, reviewed_at, interval_days)
+            if dedupe_key in existing_log_keys:
+                continue
+
+            session.add(
+                ReviewLog(
+                    topic_id=topic.id,
+                    reviewed_at=reviewed_at,
+                    interval_days=interval_days,
+                )
+            )
+            existing_log_keys.add(dedupe_key)
+            stats["review_logs_added"] += 1
+
+        session.commit()
+
+    _invalidate_progress_cache()
+    return stats
+
+
+def push_snapshot_to_remote(engine: Engine, put_url: str | None = None) -> bool:
+    """
+    Push a JSON snapshot to remote storage via HTTP PUT/POST URL.
+    """
+    config = _get_remote_backup_config()
+    target_url = put_url or config["put_url"]
+    if not target_url:
+        return False
+
+    method = config["put_method"] if put_url is None else "PUT"
+    payload = json.dumps(export_snapshot_to_dict(engine), ensure_ascii=False).encode(
+        "utf-8"
+    )
+    headers = {
+        "Content-Type": "application/json; charset=utf-8",
+        "Content-Length": str(len(payload)),
+    }
+
+    try:
+        request = Request(target_url, data=payload, method=method, headers=headers)
+        with urlopen(request, timeout=_BACKUP_REQUEST_TIMEOUT_SECONDS):
+            return True
+    except (HTTPError, URLError, TimeoutError, OSError, ValueError) as exc:
+        logger.warning("Falha no push do backup JSON remoto: %s", exc)
+        return False
+
+
+def restore_snapshot_from_remote(engine: Engine, get_url: str | None = None) -> bool:
+    """
+    Restore database state from remote JSON snapshot via HTTP GET URL.
+    """
+    config = _get_remote_backup_config()
+    target_url = get_url or config["get_url"]
+    if not target_url:
+        return False
+
+    try:
+        request = Request(target_url, method="GET")
+        with urlopen(request, timeout=_BACKUP_REQUEST_TIMEOUT_SECONDS) as response:
+            raw_payload = response.read()
+    except HTTPError as exc:
+        if exc.code == 404:
+            logger.info("Backup remoto JSON ainda não existe (HTTP 404).")
+            return False
+        logger.warning("Falha no restore do backup JSON remoto: %s", exc)
+        return False
+    except (URLError, TimeoutError, OSError, ValueError) as exc:
+        logger.warning("Falha no restore do backup JSON remoto: %s", exc)
+        return False
+
+    if not raw_payload:
+        return False
+
+    try:
+        snapshot = json.loads(raw_payload.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        logger.warning("Backup JSON remoto inválido: %s", exc)
+        return False
+
+    if not isinstance(snapshot, dict):
+        return False
+
+    stats = import_snapshot_from_dict(engine, snapshot)
+    changed_rows = (
+        stats["topics_created"]
+        + stats["topics_updated"]
+        + stats["progress_upserted"]
+        + stats["review_logs_added"]
+    )
+    return changed_rows > 0
+
+
+def _sync_remote_backup_after_write(engine: Engine) -> None:
+    """
+    Try to sync remote JSON backup after write operations.
+
+    This must never raise to avoid blocking user actions.
+    """
+    try:
+        push_snapshot_to_remote(engine)
+    except Exception:
+        # Fail-safe: backup is best effort.
+        pass
 
 
 def _invalidate_progress_cache() -> None:
@@ -90,6 +525,7 @@ def import_topics_from_json(engine: Engine, json_path: str = "conteudo.json") ->
         sections = json.load(f)
 
     imported_count = 0
+    updated_count = 0
 
     with Session(engine) as session:
         for section in sections:
@@ -116,10 +552,16 @@ def import_topics_from_json(engine: Engine, json_path: str = "conteudo.json") ->
                         )
                         session.add(new_topic)
                         imported_count += 1
+                    elif existing.titulo != titulo:
+                        existing.titulo = titulo
+                        session.add(existing)
+                        updated_count += 1
 
         session.commit()
 
-    _invalidate_progress_cache()
+    if imported_count > 0 or updated_count > 0:
+        _invalidate_progress_cache()
+        _sync_remote_backup_after_write(engine)
     return imported_count
 
 
@@ -151,6 +593,7 @@ def mark_topic_complete(engine: Engine, topic_id: int) -> bool:
 
         session.commit()
         _invalidate_progress_cache()
+        _sync_remote_backup_after_write(engine)
         return True
 
 
@@ -298,6 +741,7 @@ def mark_review_complete(engine: Engine, topic_id: int, interval: int) -> bool:
         session.add(progress)
         session.commit()
         _invalidate_progress_cache()
+        _sync_remote_backup_after_write(engine)
         return True
 
 
@@ -507,6 +951,7 @@ def unmark_topic_complete(engine: Engine, topic_id: int) -> bool:
         session.add(progress)
         session.commit()
         _invalidate_progress_cache()
+        _sync_remote_backup_after_write(engine)
         return True
 
 

@@ -59,10 +59,58 @@ git push origin main
 
 **Workarounds**:
 1. Export data regularly using the "💾 Exportar" tab
-2. Migrate to PostgreSQL (recommended for production)
-3. Accept data loss and re-import from conteudo.json
+2. Use remote JSON fallback (SQLite + snapshot remoto)
+3. Migrate to PostgreSQL (recommended for production)
+4. Accept data loss and re-import from conteudo.json
 
 See "Data Persistence Limitations" section below for details.
+
+## Remote JSON Fallback (S3/R2)
+
+This app supports automatic remote snapshot backup/restore:
+
+- On startup, if local SQLite is empty, the app tries restoring from remote JSON.
+- After write operations, the app pushes a fresh JSON snapshot remotely.
+- Backup sync is best effort (network failures do not block app usage).
+
+### Streamlit Secrets
+
+Configure secrets in Streamlit Cloud:
+
+```toml
+[backup]
+json_get_url = "https://<URL-PRESIGNED-GET>"
+json_put_url = "https://<URL-PRESIGNED-PUT>"
+json_put_method = "PUT" # optional: PUT (default) or POST
+```
+
+### Recommended Setup
+
+- Store a single object (e.g. `backup/study_tracker_snapshot.json`) in R2 or S3.
+- Generate one pre-signed URL for reading and one for writing this object.
+- For local setup, copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml`.
+
+## Supabase/PostgreSQL (Recommended for durable persistence)
+
+This app supports PostgreSQL automatically. If a DB URL is configured, it is used instead of local SQLite.
+
+### Streamlit Secrets (preferred)
+
+```toml
+[database]
+url = "postgresql+psycopg://<user>:<password>@<host>:6543/postgres?sslmode=require&pgbouncer=true"
+```
+
+### Environment variable fallback
+
+```toml
+DATABASE_URL = "postgresql+psycopg://<user>:<password>@<host>:6543/postgres?sslmode=require&pgbouncer=true"
+```
+
+Notes:
+- Keep `sslmode=require`.
+- For Supabase pooler, port `6543` with `pgbouncer=true` is recommended.
+- Never commit credentials to Git.
 
 ## Resource Limits
 

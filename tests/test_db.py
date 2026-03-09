@@ -5,14 +5,18 @@ Cada teste utiliza SQLite in-memory via fixture `engine` para
 isolamento total entre execuções.
 """
 
+import json
 from datetime import datetime, timedelta
 
-from sqlmodel import Session
+from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel.pool import StaticPool
 
+import db as db_module
 from db import (
     Progress,
     Topic,
     export_all_progress_to_dict,
+    export_snapshot_to_dict,
     get_all_progress,
     get_detailed_statistics_by_section,
     get_statistics,
@@ -21,9 +25,11 @@ from db import (
     get_topics_due_for_review,
     get_upcoming_reviews,
     get_weekly_review_data,
+    import_snapshot_from_dict,
     import_topics_from_json,
     mark_review_complete,
     mark_topic_complete,
+    restore_snapshot_from_remote,
     unmark_topic_complete,
 )
 
@@ -52,6 +58,28 @@ class TestImportTopics:
             count = session.exec(select(func.count(Topic.id))).first()
             assert count is not None
             assert count > 300  # O banco deve ter ~344 tópicos
+
+    def test_import_updates_existing_topic_title(self, engine, sample_json, tmp_path):
+        """Deve atualizar título quando código+seção+subseção já existem."""
+        assert import_topics_from_json(engine, sample_json) == 3
+
+        with open(sample_json, encoding="utf-8") as f:
+            payload = json.load(f)
+
+        updated_title = "Tópico atualizado para teste"
+        payload[0]["subsecoes"][0]["topicos"][0]["titulo"] = updated_title
+
+        updated_json = tmp_path / "updated_topics.json"
+        with open(updated_json, "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False)
+
+        # Nenhum tópico novo, apenas atualização do título existente
+        assert import_topics_from_json(engine, str(updated_json)) == 0
+
+        with Session(engine) as session:
+            topic = session.get(Topic, 1)
+            assert topic is not None
+            assert topic.titulo == updated_title
 
 
 class TestMarkTopicComplete:
@@ -356,3 +384,73 @@ class TestExport:
         }
         for item in result:
             assert required_keys.issubset(item.keys())
+
+
+class TestRemoteJsonSnapshot:
+    """Testes para snapshot JSON local/remoto."""
+
+    def _new_in_memory_engine(self):
+        target_engine = create_engine(
+            "sqlite://",
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
+        SQLModel.metadata.create_all(target_engine)
+        return target_engine
+
+    def test_snapshot_round_trip_between_databases(self, engine, sample_json):
+        """Export + import de snapshot deve preservar progresso e revisões."""
+        import_topics_from_json(engine, sample_json)
+        assert mark_topic_complete(engine, 1) is True
+        assert mark_review_complete(engine, 1, 7) is True
+
+        snapshot = export_snapshot_to_dict(engine)
+        target_engine = self._new_in_memory_engine()
+        import_stats = import_snapshot_from_dict(target_engine, snapshot)
+
+        assert import_stats["topics_created"] == 3
+        assert import_stats["progress_upserted"] == 1
+        assert import_stats["review_logs_added"] == 1
+
+        get_all_progress.clear()
+        target_progress = get_all_progress(target_engine)
+        topic_1 = next((item for item in target_progress if item["codigo"] == "A1.1"), None)
+        assert topic_1 is not None
+        assert topic_1["completed_at"] is not None
+        assert topic_1["review_count"] == 1
+
+    def test_restore_snapshot_from_remote_url(self, engine, sample_json, monkeypatch):
+        """Restore remoto deve importar snapshot quando endpoint retorna JSON válido."""
+        import_topics_from_json(engine, sample_json)
+        assert mark_topic_complete(engine, 1) is True
+
+        snapshot = export_snapshot_to_dict(engine)
+        payload = json.dumps(snapshot, ensure_ascii=False).encode("utf-8")
+        target_engine = self._new_in_memory_engine()
+
+        class DummyResponse:
+            def __init__(self, body: bytes):
+                self._body = body
+
+            def read(self) -> bytes:
+                return self._body
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+        def fake_urlopen(request, timeout):  # noqa: ARG001
+            return DummyResponse(payload)
+
+        monkeypatch.setattr(db_module, "urlopen", fake_urlopen)
+
+        restored = restore_snapshot_from_remote(
+            target_engine, get_url="https://example.com/snapshot.json"
+        )
+        assert restored is True
+
+        stats = get_statistics(target_engine)
+        assert stats["total_topics"] == 3
+        assert stats["completed_topics"] == 1

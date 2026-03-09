@@ -8,17 +8,26 @@ following Streamlit best practices.
 import logging
 import os
 
-import psutil
 import streamlit as st
 from sqlalchemy import Engine, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session, select
 
-from db import Topic, import_topics_from_json, init_db
+from db import Topic, import_topics_from_json, init_db, restore_snapshot_from_remote
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# psutil is optional on some cloud builds; fallback gracefully if unavailable.
+try:
+    import psutil
+
+    HAS_PSUTIL = True
+except ImportError:
+    psutil = None
+    HAS_PSUTIL = False
+    logger.warning("psutil não disponível - monitoramento de memória simplificado")
 
 
 def get_memory_usage_mb() -> float:
@@ -28,6 +37,9 @@ def get_memory_usage_mb() -> float:
     Returns:
         float: Memory usage in megabytes
     """
+    if not HAS_PSUTIL or psutil is None:
+        return 0.0
+
     try:
         process = psutil.Process(os.getpid())
         return process.memory_info().rss / 1024 / 1024  # Convert bytes to MB
@@ -64,8 +76,9 @@ def get_db_connection() -> Engine:
         Any: Active database engine
     """
     try:
-        # Create connection and automatically initialize schema and directories
-        engine = init_db("data/study_tracker.db")
+        # Create connection and automatically initialize schema.
+        # Priority is handled in init_db(): secrets/env PostgreSQL -> local SQLite.
+        engine = init_db()
         logger.info("Database connection established")
         return engine
     except (SQLAlchemyError, OSError) as e:
@@ -118,16 +131,42 @@ def initialize_database() -> bool:
             topic_count = session.exec(select(func.count(Topic.id))).first() or 0
 
         if topic_count == 0:
-            logger.info("Database empty, importing topics from conteudo.json")
+            logger.info("Database empty, trying remote JSON restore before local import")
+
+            restored = restore_snapshot_from_remote(engine)
+            if restored:
+                with Session(engine) as session:
+                    restored_count = (
+                        session.exec(select(func.count(Topic.id))).first() or 0
+                    )
+                if restored_count > 0:
+                    logger.info(
+                        "Database restored from remote JSON backup with %s topics",
+                        restored_count,
+                    )
+                    return True
+
+            logger.info("Remote restore unavailable/empty, importing conteudo.json")
 
             imported = import_topics_from_json(engine)
             logger.info(f"Imported {imported} topics successfully")
             return True
         else:
+            # Keep topic catalog synchronized with conteudo.json (new topics/title fixes)
+            try:
+                imported = import_topics_from_json(engine)
+                if imported > 0:
+                    logger.info(
+                        "Catalog sync added %s new topics from conteudo.json", imported
+                    )
+            except FileNotFoundError:
+                logger.warning(
+                    "conteudo.json não encontrado para sync; mantendo catálogo atual"
+                )
             logger.info(f"Database already contains {topic_count} topics")
             return True
 
-    except (SQLAlchemyError, OSError, ValueError) as e:
+    except (SQLAlchemyError, OSError, ValueError, FileNotFoundError) as e:
         logger.error("Database initialization error: %s", e)
         st.error(f"Erro ao inicializar banco de dados: {e}")
         return False

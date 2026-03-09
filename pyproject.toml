@@ -6,6 +6,7 @@ dependencies = [
     "pandas>=2.3.3",
     "plotly>=6.6.0",
     "psutil>=7.2.2",
+    "psycopg[binary]>=3.2.10",
     "sqlmodel>=0.0.37",
     "streamlit>=1.55.0",
 ]

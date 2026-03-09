@@ -167,6 +167,50 @@ Para instruções detalhadas de deployment, consulte **[DEPLOYMENT.md](DEPLOYMEN
 
 Veja detalhes completos em [DEPLOYMENT.md](DEPLOYMENT.md#-critical-sqlite-data-does-not-persist-between-deploys).
 
+### ✅ Fallback Remoto JSON (SQLite + Backup)
+
+Este projeto suporta fallback remoto com snapshot JSON:
+
+- Na inicialização, se o SQLite local estiver vazio, o app tenta restaurar de um JSON remoto.
+- Após escritas no banco (marcar/desmarcar/revisar/importação), o app envia novo snapshot.
+- O processo é **best effort**: falha de rede não derruba o app.
+
+Configure no painel da Streamlit Cloud em **App settings → Secrets**:
+
+```toml
+[backup]
+json_get_url = "https://<URL-PRESIGNED-GET>"
+json_put_url = "https://<URL-PRESIGNED-PUT>"
+json_put_method = "PUT" # ou "POST"
+```
+
+Dica:
+- Para Cloudflare R2 / AWS S3, use URLs pré-assinadas para o mesmo objeto JSON (ex.: `backup/study_tracker_snapshot.json`).
+- Para ambiente local, use o template [`./.streamlit/secrets.toml.example`](.streamlit/secrets.toml.example).
+
+### 🛡️ Persistência Forte com Supabase/PostgreSQL (Recomendado)
+
+O app agora suporta PostgreSQL automaticamente via `st.secrets` ou variáveis de ambiente.
+Se `DATABASE_URL` estiver configurada, ela tem prioridade sobre SQLite.
+
+Exemplo de secrets no Streamlit Cloud:
+
+```toml
+[database]
+url = "postgresql+psycopg://<user>:<password>@<host>:6543/postgres?sslmode=require&pgbouncer=true"
+```
+
+Alternativa:
+
+```toml
+DATABASE_URL = "postgresql+psycopg://<user>:<password>@<host>:6543/postgres?sslmode=require&pgbouncer=true"
+```
+
+Importante:
+- Não comite segredos no repositório.
+- Se você expôs credenciais em qualquer lugar, faça rotação imediata.
+- Use o arquivo [`./.streamlit/secrets.toml.example`](.streamlit/secrets.toml.example) como base.
+
 ### Deploy URL
 
 🔗 **[gayatcu.streamlit.app](https://gayatcu.streamlit.app)** *(placeholder - atualize após o primeiro deploy)*
