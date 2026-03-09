@@ -163,7 +163,9 @@ def mark_topic_complete(conn: sqlite3.Connection, topic_id: int) -> bool:
         bool: True if successful, False if topic_id doesn't exist
     """
     cursor = conn.cursor()
-    now = datetime.now().isoformat()
+    dt_now = datetime.now()
+    now_iso = dt_now.isoformat()
+    next_review = (dt_now + timedelta(days=1)).strftime("%Y-%m-%d")
 
     # Check if topic exists
     cursor.execute("SELECT id FROM topics WHERE id = ?", (topic_id,))
@@ -173,12 +175,12 @@ def mark_topic_complete(conn: sqlite3.Connection, topic_id: int) -> bool:
     # Insert or update progress record
     cursor.execute(
         """
-        INSERT INTO progress (topic_id, completed_at)
-        VALUES (?, ?)
+        INSERT INTO progress (topic_id, completed_at, next_review_date, last_reviewed_at, review_count)
+        VALUES (?, ?, ?, NULL, 0)
         ON CONFLICT(topic_id) DO UPDATE SET
-            completed_at = excluded.completed_at
+            completed_at = COALESCE(progress.completed_at, excluded.completed_at)
     """,
-        (topic_id, now),
+        (topic_id, now_iso, next_review),
     )
 
     conn.commit()
