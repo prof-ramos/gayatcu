@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import streamlit as st
 from sqlalchemy.exc import SQLAlchemyError
@@ -11,6 +12,7 @@ from session import get_db, initialize_database
 from utils import get_completion_percentage, get_section_progress
 
 logger = logging.getLogger(__name__)
+TCU_LOGO_PATH = Path(__file__).parent / "assets" / "tcu_logo.png"
 
 st.set_page_config(
     page_title="GayATCU - Dashboard de Estudos TCU", page_icon="📘", layout="wide"
@@ -19,6 +21,11 @@ st.set_page_config(
 
 def display_header():
     """Display enhanced header with progress bar."""
+    if TCU_LOGO_PATH.exists():
+        logo_left, logo_center, logo_right = st.columns([1, 10, 1])
+        with logo_center:
+            st.image(str(TCU_LOGO_PATH), width="stretch")
+
     st.title("📘 GayATCU - Dashboard de Estudos TCU")
     st.markdown(
         """
